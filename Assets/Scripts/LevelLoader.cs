@@ -22,6 +22,15 @@ public class LevelLoader : MonoBehaviour
     public Vector3 anchorOffset = Vector3.zero;
     public bool spawnGroundPlane = true;
     
+    void Awake()
+    {
+        // Create GridManager as a child of this LevelLoader
+        GameObject gridManagerObj = new GameObject("GridManager");
+        gridManagerObj.transform.SetParent(transform);
+        gridManagerObj.AddComponent<GridManager>();
+        Debug.Log("GridManager created by LevelLoader");
+    }
+    
     void Start()
     {
         if (levelFile != null)
@@ -91,6 +100,8 @@ public class LevelLoader : MonoBehaviour
                         {
                             rb.isKinematic = true;
                             rb.useGravity = false;
+                            rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+                            Debug.Log("Player Rigidbody: kinematic with continuous collision detection");
                         }
                     }
                     else

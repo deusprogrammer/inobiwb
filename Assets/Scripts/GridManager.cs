@@ -10,8 +10,7 @@ public class GridManager : MonoBehaviour
         {
             if (instance == null)
             {
-                GameObject go = new GameObject("GridManager");
-                instance = go.AddComponent<GridManager>();
+                Debug.LogError("GridManager.Instance accessed before initialization! LevelLoader should create it first.");
             }
             return instance;
         }
@@ -25,10 +24,21 @@ public class GridManager : MonoBehaviour
         if (instance == null)
         {
             instance = this;
+            Debug.Log("GridManager initialized");
         }
         else if (instance != this)
         {
+            Debug.LogWarning("Multiple GridManager instances detected! Destroying duplicate.");
             Destroy(gameObject);
+        }
+    }
+    
+    void OnDestroy()
+    {
+        if (instance == this)
+        {
+            instance = null;
+            Debug.Log("GridManager destroyed");
         }
     }
     

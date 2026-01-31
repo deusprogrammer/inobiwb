@@ -36,26 +36,41 @@ public class PlayerMovingState : HomeBoyState
         // Use world-space movement (not camera-relative) for strict grid alignment
         Vector3 movement = new Vector3(lockedInput.x, 0, lockedInput.y);
         
-        // Check if we're trying to cross into a new grid cell
+        // Use Physics checks to prevent clipping through blocks
         Vector3 currentPos = homeBoyController.RigidBody.position;
-        Vector3 nextPos = currentPos + 5f * deltaTime * movement;
+        Vector3 desiredMovement = 5f * deltaTime * movement;
+        Vector3 targetPos = currentPos + desiredMovement;
         
-        Vector3Int currentGridPos = GridManager.WorldToGrid(currentPos);
-        Vector3Int nextGridPos = GridManager.WorldToGrid(nextPos);
+        // Get player's collider size
+        BoxCollider playerCollider = homeBoyController.GetComponent<BoxCollider>();
+        Vector3 halfExtents = playerCollider.size * 0.5f * homeBoyController.transform.localScale.x;
+        Vector3 center = playerCollider.center;
         
-        // Only check collision if we're moving to a different grid cell
-        if (currentGridPos != nextGridPos)
+        // Check if target position would overlap with anything
+        Collider[] overlaps = Physics.OverlapBox(
+            targetPos + center,
+            halfExtents * 0.95f, // Slightly smaller to avoid edge cases
+            Quaternion.identity,
+            ~0, // Check all layers
+            QueryTriggerInteraction.Ignore
+        );
+        
+        // Filter out self
+        bool wouldOverlap = false;
+        foreach (Collider col in overlaps)
         {
-            if (GridManager.Instance != null && GridManager.Instance.IsPositionBlocked(GridManager.GridToWorld(nextGridPos)))
+            if (col != playerCollider)
             {
-                Debug.Log($"Movement blocked - trying to enter occupied grid cell {nextGridPos}");
-                // Stop at grid boundary
-                return;
+                wouldOverlap = true;
+                break;
             }
         }
         
-        // Apply movement on x and z axis
-        homeBoyController.RigidBody.MovePosition(nextPos);
+        if (!wouldOverlap)
+        {
+            // Safe to move
+            homeBoyController.RigidBody.MovePosition(targetPos);
+        }
         
         // Apply rotation based on movement direction
         if (movement.magnitude > 0.01f)
