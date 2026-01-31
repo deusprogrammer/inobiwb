@@ -6,9 +6,20 @@ public class LevelLoaderEditor : Editor
 {
     public override void OnInspectorGUI()
     {
+        LevelLoader levelLoader = (LevelLoader)target;
+        
+        // Check if a preview exists
+        bool previewExists = GameObject.Find("LEVEL_PREVIEW") != null;
+        
+        // Monitor changes
+        EditorGUI.BeginChangeCheck();
         DrawDefaultInspector();
         
-        LevelLoader levelLoader = (LevelLoader)target;
+        // If properties changed and preview exists, auto-refresh
+        if (EditorGUI.EndChangeCheck() && previewExists)
+        {
+            PreviewLevel(levelLoader);
+        }
         
         GUILayout.Space(10);
         
@@ -38,6 +49,11 @@ public class LevelLoaderEditor : Editor
         GameObject previewParent = new GameObject("LEVEL_PREVIEW");
         Undo.RegisterCreatedObjectUndo(previewParent, "Preview Level");
         
+        // Get anchor offset (defaults to zero if no anchor)
+        Vector3 totalOffset = (levelLoader.anchorObject != null ? levelLoader.anchorObject.position : Vector3.zero) + levelLoader.anchorOffset;
+        
+        Debug.Log($"Preview anchor: {(levelLoader.anchorObject != null ? levelLoader.anchorObject.name : "None")}, Position: {(levelLoader.anchorObject != null ? levelLoader.anchorObject.position.ToString() : "None")}, Custom Offset: {levelLoader.anchorOffset}, Total: {totalOffset}");
+        
         string levelData = levelLoader.levelFile.text;
         string[] lines = levelData.Split('\n');
         
@@ -50,11 +66,11 @@ public class LevelLoaderEditor : Editor
         }
         
         // Create ground plane
-        if (levelLoader.groundPlanePrefab != null)
+        if (levelLoader.spawnGroundPlane && levelLoader.groundPlanePrefab != null)
         {
             float centerX = (maxCols - 1) * levelLoader.gridSize / 2f;
             float centerZ = -(maxRows - 1) * levelLoader.gridSize / 2f;
-            Vector3 center = new Vector3(centerX, -0.1f, centerZ);
+            Vector3 center = new Vector3(centerX, -0.1f, centerZ) + totalOffset;
             
             GameObject ground = (GameObject)PrefabUtility.InstantiatePrefab(levelLoader.groundPlanePrefab);
             ground.transform.position = center;
@@ -75,7 +91,7 @@ public class LevelLoaderEditor : Editor
             for (int col = 0; col < line.Length; col++)
             {
                 char cell = line[col];
-                Vector3 position = new Vector3(col * levelLoader.gridSize, 0, -row * levelLoader.gridSize);
+                Vector3 position = new Vector3(col * levelLoader.gridSize, 0, -row * levelLoader.gridSize) + totalOffset;
                 
                 if (cell == ' ')
                 {
@@ -86,34 +102,40 @@ public class LevelLoaderEditor : Editor
                     // Player
                     if (levelLoader.playerPrefab != null)
                     {
-                        position.y = levelLoader.playerScale * 0.5f;
+                        position.y = totalOffset.y + levelLoader.playerScale * 0.5f;
                         GameObject player = (GameObject)PrefabUtility.InstantiatePrefab(levelLoader.playerPrefab);
                         player.transform.position = position;
                         player.transform.localScale = Vector3.one * levelLoader.playerScale;
                         player.transform.SetParent(previewParent.transform);
+                        
+                        // Disable any controllers to prevent runtime behavior
+                        foreach (MonoBehaviour component in player.GetComponents<MonoBehaviour>())
+                        {
+                            component.enabled = false;
+                        }
+                        
                         Undo.RegisterCreatedObjectUndo(player, "Preview Player");
                     }
                 }
                 else if (cell >= '1' && cell <= '9')
                 {
-                    SpawnPreviewBlock(levelLoader, position, cell, false, previewParent.transform);
+                    SpawnPreviewBlock(levelLoader, position, cell, false, previewParent.transform, totalOffset.y);
                 }
                 else if (cell == '*')
                 {
-                    SpawnPreviewBlock(levelLoader, position, '1', true, previewParent.transform);
+                    SpawnPreviewBlock(levelLoader, position, '1', true, previewParent.transform, totalOffset.y);
                 }
             }
         }
         
-        Selection.activeGameObject = previewParent;
         Debug.Log($"Level preview created: {maxCols}x{maxRows} grid");
     }
     
-    private void SpawnPreviewBlock(LevelLoader levelLoader, Vector3 position, char code, bool immovable, Transform parent)
+    private void SpawnPreviewBlock(LevelLoader levelLoader, Vector3 position, char code, bool immovable, Transform parent, float yOffset)
     {
         if (levelLoader.clutterBlockPrefab == null) return;
         
-        position.y = levelLoader.objectScale * 0.5f;
+        position.y = yOffset + levelLoader.objectScale * 0.5f;
         
         GameObject block = (GameObject)PrefabUtility.InstantiatePrefab(levelLoader.clutterBlockPrefab);
         block.transform.position = position;
@@ -123,6 +145,9 @@ public class LevelLoaderEditor : Editor
         ClutterBlockStateController controller = block.GetComponent<ClutterBlockStateController>();
         if (controller != null)
         {
+            // Disable the controller to prevent OnStart from running
+            controller.enabled = false;
+            
             controller.isImmovable = immovable;
             
             int codeValue = code - '0';
@@ -179,6 +204,14 @@ public class LevelLoaderEditor : Editor
         {
             Undo.DestroyObjectImmediate(preview);
             Debug.Log("Level preview cleared");
+        }
+        
+        // Clean up any GridManager instances that may have been created
+        GridManager gridManager = GameObject.FindObjectOfType<GridManager>();
+        if (gridManager != null)
+        {
+            Undo.DestroyObjectImmediate(gridManager.gameObject);
+            Debug.Log("Cleaned up GridManager instance");
         }
     }
 }

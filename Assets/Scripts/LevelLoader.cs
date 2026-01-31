@@ -15,6 +15,13 @@ public class LevelLoader : MonoBehaviour
     public float objectScale = 0.8f;
     public float playerScale = 0.6f;
     
+    [Header("World Position")]
+    [Tooltip("Optional anchor object - level will spawn relative to this position. If null, spawns at world origin.")]
+    public Transform anchorObject;
+    [Tooltip("Additional offset from the anchor position.")]
+    public Vector3 anchorOffset = Vector3.zero;
+    public bool spawnGroundPlane = true;
+    
     void Start()
     {
         if (levelFile != null)
@@ -29,6 +36,11 @@ public class LevelLoader : MonoBehaviour
     
     void LoadLevel(string levelData)
     {
+        // Get anchor offset (defaults to zero if no anchor)
+        Vector3 totalOffset = (anchorObject != null ? anchorObject.position : Vector3.zero) + anchorOffset;
+        
+        Debug.Log($"Loading level - Anchor: {(anchorObject != null ? anchorObject.name : "None")}, Position: {(anchorObject != null ? anchorObject.position.ToString() : "None")}, Custom Offset: {anchorOffset}, Total: {totalOffset}");
+        
         // Split into lines
         string[] lines = levelData.Split('\n');
         
@@ -41,7 +53,7 @@ public class LevelLoader : MonoBehaviour
         }
         
         // Create ground plane
-        CreateGroundPlane(maxRows, maxCols);
+        CreateGroundPlane(maxRows, maxCols, totalOffset);
         
         for (int row = 0; row < lines.Length; row++)
         {
@@ -52,7 +64,7 @@ public class LevelLoader : MonoBehaviour
                 char cell = line[col];
                 
                 // Calculate world position (flip Z to match text file orientation)
-                Vector3 position = new Vector3(col * gridSize, 0, -row * gridSize);
+                Vector3 position = new Vector3(col * gridSize, 0, -row * gridSize) + totalOffset;
                 
                 // Process cell based on character
                 if (cell == ' ')
@@ -100,8 +112,14 @@ public class LevelLoader : MonoBehaviour
         }
     }
     
-    void CreateGroundPlane(int rows, int cols)
+    void CreateGroundPlane(int rows, int cols, Vector3 offset)
     {
+        if (!spawnGroundPlane)
+        {
+            Debug.Log("Ground plane creation disabled");
+            return;
+        }
+        
         if (groundPlanePrefab == null)
         {
             Debug.LogWarning("Ground plane prefab not assigned - skipping ground creation");
@@ -111,7 +129,7 @@ public class LevelLoader : MonoBehaviour
         // Calculate center of the level
         float centerX = (cols - 1) * gridSize / 2f;
         float centerZ = -(rows - 1) * gridSize / 2f;
-        Vector3 center = new Vector3(centerX, -0.1f, centerZ); // Slightly below y=0
+        Vector3 center = new Vector3(centerX, -0.1f, centerZ) + offset; // Slightly below y=0
         
         // Instantiate ground plane
         GameObject ground = Instantiate(groundPlanePrefab, center, Quaternion.identity);
