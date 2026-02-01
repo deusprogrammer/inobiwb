@@ -31,7 +31,7 @@ public class EventBus : MonoBehaviour
         if (instance == null)
         {
             instance = this;
-            DontDestroyOnLoad(gameObject);
+            // Removed DontDestroyOnLoad - EventBus is now per-scene
         }
         else if (instance != this)
         {

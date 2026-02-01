@@ -21,7 +21,7 @@ public class SceneTransitionManager : MonoBehaviour
         if (instance == null)
         {
             instance = this;
-            DontDestroyOnLoad(gameObject);
+            // Removed DontDestroyOnLoad - SceneTransitionManager is now per-scene
         }
         else
         {

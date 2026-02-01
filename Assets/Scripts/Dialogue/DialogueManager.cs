@@ -10,9 +10,6 @@ public class DialogueManager : MonoBehaviour
     private static DialogueManager instance;
     public static DialogueManager Instance => instance;
 
-    [Header("Trigger Configuration")]
-    [SerializeField] private TextAsset triggersJson;
-    
     [Header("Character Portraits")]
     [SerializeField] private List<CharacterPortrait> characterPortraits = new List<CharacterPortrait>();
     
@@ -29,7 +26,7 @@ public class DialogueManager : MonoBehaviour
         if (instance == null)
         {
             instance = this;
-            DontDestroyOnLoad(gameObject);
+            // Removed DontDestroyOnLoad - DialogueManager is now per-scene
         }
         else
         {
@@ -37,9 +34,34 @@ public class DialogueManager : MonoBehaviour
             return;
         }
 
-        LoadTriggers();
+        LoadTriggersForCurrentScene();
         BuildPortraitLookup();
         SubscribeToEvents();
+    }
+    
+    private void LoadTriggersForCurrentScene()
+    {
+        // Load JSON file matching scene name (e.g., "Tutorial" -> "tutorial.json")
+        string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        string jsonFileName = sceneName.ToLower();
+        
+        TextAsset sceneJson = Resources.Load<TextAsset>(jsonFileName);
+        
+        if (sceneJson != null)
+        {
+            Debug.Log($"[DialogueManager] Loading dialogue for scene: {sceneName} from {jsonFileName}.json");
+            triggerData = JsonUtility.FromJson<DialogueTriggerData>(sceneJson.text);
+            
+            if (triggerData.triggers != null)
+            {
+                Debug.Log($"[DialogueManager] Loaded {triggerData.triggers.Count} triggers for {sceneName}");
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"[DialogueManager] No dialogue file found for scene '{sceneName}' (looking for Resources/{jsonFileName}.json)");
+            triggerData = new DialogueTriggerData();
+        }
     }
     
     private void BuildPortraitLookup()
@@ -88,31 +110,7 @@ public class DialogueManager : MonoBehaviour
         if (instance == this)
         {
             UnsubscribeFromEvents();
-        }
-    }
-
-    private void LoadTriggers()
-    {
-        if (triggersJson == null)
-        {
-            Debug.LogError("[DialogueManager] No triggers.json assigned!");
-            return;
-        }
-
-        try
-        {
-            triggerData = JsonUtility.FromJson<DialogueTriggerData>(triggersJson.text);
-            Debug.Log($"[DialogueManager] Loaded {triggerData.triggers.Count} triggers");
-            
-            // Log each trigger ID for debugging
-            foreach (DialogueTrigger trigger in triggerData.triggers)
-            {
-                Debug.Log($"[DialogueManager] - Trigger loaded: {trigger.id} (event: {trigger.eventName})");
-            }
-        }
-        catch (System.Exception ex)
-        {
-            Debug.LogError($"[DialogueManager] Failed to parse triggers.json: {ex.Message}");
+            instance = null;
         }
     }
 
