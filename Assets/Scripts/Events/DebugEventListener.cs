@@ -27,6 +27,7 @@ public class DebugEventListener : MonoBehaviour
             SubscribeToEvent(EventNames.FurnitureMoved);
             SubscribeToEvent(EventNames.FurnitureMoveFailure);
             SubscribeToEvent(EventNames.Hug);
+            SubscribeToEvent(EventNames.LevelComplete);
             
             Debug.Log("[DebugEventListener] Listening to all events");
         }

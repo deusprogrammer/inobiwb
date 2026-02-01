@@ -61,6 +61,10 @@ public class ClutterBlockFadingState : ClutterBlockState
         
         if (fadeProgress >= 1f)
         {
+            // Publish block cleared event before destroying
+            string blockType = blockController.blockType.ToString().ToLower();
+            EventBus.Instance.Publish(new GameEvent(EventNames.BlockCleared, blockController.lastPusher, blockType));
+            
             // Fade complete, destroy the object
             Object.Destroy(blockController.gameObject);
         }

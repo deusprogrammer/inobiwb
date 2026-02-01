@@ -25,6 +25,10 @@ public class CharacterPortrait : ScriptableObject
     [Tooltip("Map expression names to sprite images")]
     public List<ExpressionData> expressions = new List<ExpressionData>();
     
+    [Header("Full Body Portraits")]
+    [Tooltip("Map full body pose names to sprite images")]
+    public List<ExpressionData> fullBodyPortraits = new List<ExpressionData>();
+    
     /// <summary>
     /// Get sprite for a specific expression. Returns default expression if not found, or null if no default.
     /// </summary>
@@ -70,6 +74,41 @@ public class CharacterPortrait : ScriptableObject
         {
             return expressions[0].sprite;
         }
+        return null;
+    }
+    
+    /// <summary>
+    /// Get full body portrait sprite. Returns default full body if not found, or null.
+    /// </summary>
+    public Sprite GetFullBodyPortrait(string portraitName)
+    {
+        // If no name specified, return null
+        if (string.IsNullOrEmpty(portraitName))
+        {
+            return null;
+        }
+            
+        // Look for exact match
+        foreach (ExpressionData portrait in fullBodyPortraits)
+        {
+            if (portrait.expressionName == portraitName)
+            {
+                return portrait.sprite;
+            }
+        }
+        
+        // Not found - try to find "default" as fallback
+        Debug.LogWarning($"[CharacterPortrait] Full body portrait '{portraitName}' not found for character '{characterName}', trying default");
+        
+        foreach (ExpressionData portrait in fullBodyPortraits)
+        {
+            if (portrait.expressionName == "default")
+            {
+                return portrait.sprite;
+            }
+        }
+        
+        // No default found - return null to hide full body
         return null;
     }
 }

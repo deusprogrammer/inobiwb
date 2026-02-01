@@ -22,6 +22,7 @@ public class DialogueTrigger
     public Dictionary<string, bool> condition;
     public List<string> setFlags;
     public List<DialogueLine> dialogue;
+    public string nextScene; // Scene to load after dialogue completes
     
     [NonSerialized]
     public int fireCount = 0;
@@ -32,6 +33,7 @@ public class DialogueLine
 {
     public string speaker;
     public string expression;
+    public string fullBody; // Key for full body portrait
     public string text;
     public int count; // Optional: which trigger repetition this line applies to
 }

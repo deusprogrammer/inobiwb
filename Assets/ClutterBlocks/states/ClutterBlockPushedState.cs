@@ -72,11 +72,7 @@ public class ClutterBlockPushedState : ClutterBlockState
             // Check if this block should be destroyed (after absorption)
             if (blockController.level >= 4)
             {
-                // Publish block cleared event
-                string blockType = blockController.blockType.ToString().ToLower();
-                EventBus.Instance.Publish(new GameEvent(EventNames.BlockCleared, blockController.lastPusher, blockType));
-                
-                // Transition to fading state
+                // Transition to fading state (event will fire when fade completes)
                 controller.ChangeState(ClutterBlockStates.FADING);
                 return;
             }

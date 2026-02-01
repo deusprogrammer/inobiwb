@@ -17,6 +17,9 @@ public class DialogueBoxController : MonoBehaviour
     [Tooltip("Image component for character portrait")]
     public Image portraitImage;
     
+    [Tooltip("Image component for full body portrait (scene end graphics)")]
+    public Image fullBodyImage;
+    
     [Header("Auto-Hide Settings")]
     [Tooltip("Duration in seconds before dialogue auto-hides (0 = no auto-hide)")]
     public float autoHideDuration = 3f;
@@ -66,7 +69,7 @@ public class DialogueBoxController : MonoBehaviour
     /// <summary>
     /// Show the dialogue box with the specified text and optional portrait
     /// </summary>
-    public void Show(string text, Sprite portrait = null, bool enableAutoHide = false)
+    public void Show(string text, Sprite portrait = null, Sprite fullBody = null, bool enableAutoHide = false)
     {
         if (dialogueText != null)
         {
@@ -84,6 +87,20 @@ public class DialogueBoxController : MonoBehaviour
             else
             {
                 portraitImage.enabled = false;
+            }
+        }
+        
+        // Update full body portrait
+        if (fullBodyImage != null)
+        {
+            if (fullBody != null)
+            {
+                fullBodyImage.sprite = fullBody;
+                fullBodyImage.enabled = true;
+            }
+            else
+            {
+                fullBodyImage.enabled = false;
             }
         }
         
@@ -120,6 +137,12 @@ public class DialogueBoxController : MonoBehaviour
         if (portraitImage != null)
         {
             portraitImage.enabled = false;
+        }
+        
+        // Hide full body portrait
+        if (fullBodyImage != null)
+        {
+            fullBodyImage.enabled = false;
         }
         
         isAutoHideEnabled = false;

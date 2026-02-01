@@ -50,7 +50,11 @@ public class CameraController : MonoBehaviour
     }
     
     void LateUpdate()
-    {        
+    {
+        // Don't update if we don't have a target yet
+        if (target == null)
+            return;
+            
         // Calculate desired position using rotated offset
         Quaternion rotation = Quaternion.Euler(currentRotationX, currentRotationY, 0);
         Vector3 rotatedOffset = rotation * offset;

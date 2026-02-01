@@ -10,21 +10,31 @@
         {
           "speaker": "Casa",
           "expression": "guarded",
+          "fullBody": "masked",
           "text": "Okay. So. Before you panic—this isn’t hard."
         },
         {
           "speaker": "Casa",
           "expression": "pensive",
-          "text": "You just push things. If three of the same kind touch, they combine."
+          "fullBody": "masked",
+          "text": "You just push things by standing next to them, pressing in their direction, and then pressing [A]."
+        },
+        {
+          "speaker": "Casa",
+          "expression": "pensive",
+          "fullBody": "masked",
+          "text": "If four or more of the same kind touch, they combine."
         },
         {
           "speaker": "Casa",
           "expression": "guarded",
+          "fullBody": "masked",
           "text": "When they level up enough… they disappear. Cleaned."
         },
         {
           "speaker": "Casa",
           "expression": "guarded",
+          "fullBody": "masked",
           "text": "No timers. No pressure. Just… physics. Emotional physics."
         }
       ]
@@ -33,7 +43,7 @@
     {
       "id": "tutorial_strategy_warning",
       "eventName": "blockPushed",
-      "freezeControls": false,
+      "freezeControls": true,
       "maxCount": 1,
       "dialogue": [
         {
@@ -66,6 +76,11 @@
           "speaker": "Casa",
           "expression": "embarassed",
           "text": "I know it’s dumb. I just… don’t want anyone else seeing my unmentionables."
+        },
+        {
+          "speaker": "Casa",
+          "expression": "embarassed",
+          "text": "Press [RB] to switch to me. I’ll handle it."
         }
       ]
     },
@@ -87,6 +102,11 @@
           "speaker": "Casa",
           "expression": "breaking",
           "text": "I’ve been… kind of shaky lately. I don’t trust myself not to drop them."
+        },
+        {
+          "speaker": "Casa",
+          "expression": "upset",
+          "text": "Press [RB] to switch back to you."
         }
       ]
     },
@@ -94,7 +114,7 @@
     {
       "id": "first_block_cleared",
       "eventName": "blockCleared",
-      "freezeControls": false,
+      "freezeControls": true,
       "maxCount": 1,
       "dialogue": [
         {
@@ -111,19 +131,41 @@
     },
 
     {
-      "id": "tutorial_level_end_perfect",
-      "eventName": "levelEndPerfect",
+      "id": "furniture_push_attempt",
+      "eventName": "furnitureMoved",
       "freezeControls": true,
       "maxCount": 1,
       "dialogue": [
         {
           "speaker": "Casa",
           "expression": "guarded",
+          "text": "Let's just… leave the furniture where it is."
+        },
+        {
+          "speaker": "Casa",
+          "expression": "pensive",
+          "text": "Unless it looks sus. Then we should probably check it out."
+        }
+      ]
+    },
+
+    {
+      "id": "tutorial_level_end_perfect",
+      "eventName": "levelEndPerfect",
+      "freezeControls": true,
+      "maxCount": 1,
+      "nextScene": "Level 1",
+      "dialogue": [
+        {
+          "speaker": "Casa",
+          "expression": "guarded",
+          "fullBody": "masked",
           "text": "You didn’t leave anything behind."
         },
         {
           "speaker": "Casa",
           "expression": "guarded",
+          "fullBody": "masked",
           "text": "See? It’s not about doing everything. Just… doing enough."
         }
       ]
@@ -134,15 +176,18 @@
       "eventName": "levelEnd",
       "freezeControls": true,
       "maxCount": 1,
+      "nextScene": "Level 1",
       "dialogue": [
         {
           "speaker": "Casa",
           "expression": "guarded",
+          "fullBody": "pensive",
           "text": "…How did you manage to leave stragglers in the tutorial?"
         },
         {
           "speaker": "Casa",
           "expression": "guarded",
+          "fullBody": "pensive",
           "text": "I mean. Impressive. Truly."
         }
       ]
@@ -170,3 +215,4 @@
 
   ]
 }
+

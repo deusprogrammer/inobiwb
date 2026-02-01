@@ -23,4 +23,7 @@ public static class EventNames
     public const string FurnitureMoved = "furnitureMoved";
     public const string FurnitureMoveFailure = "furnitureMoveFailure";
     public const string Hug = "hug";
+    
+    // Meta events
+    public const string LevelComplete = "levelComplete";
 }

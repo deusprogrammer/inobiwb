@@ -26,3 +26,10 @@ MonoBehaviour:
     sprite: {fileID: 21300000, guid: 857cda4949c87004c98f20c4e7207f74, type: 3}
   - expressionName: default
     sprite: {fileID: 21300000, guid: d836cb65a09bf7346906ab5271918bfd, type: 3}
+  fullBodyPortraits:
+  - expressionName: masked
+    sprite: {fileID: 21300000, guid: 8a56c848b558a33438e191e741970457, type: 3}
+  - expressionName: pensive
+    sprite: {fileID: 21300000, guid: b14a42fb9265e2742861f63b0bfad53f, type: 3}
+  - expressionName: crying
+    sprite: {fileID: 21300000, guid: a2b58cb5121afb3408a83a99368ba040, type: 3}

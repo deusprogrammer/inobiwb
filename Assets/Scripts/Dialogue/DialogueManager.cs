@@ -22,6 +22,7 @@ public class DialogueManager : MonoBehaviour
     private Queue<DialogueLine> dialogueQueue = new Queue<DialogueLine>();
     private bool isShowingDialogue = false;
     private bool controlsFrozen = false;
+    private DialogueTrigger currentTrigger = null; // Track which trigger's dialogue is showing
 
     void Awake()
     {
@@ -62,6 +63,20 @@ public class DialogueManager : MonoBehaviour
         if (portraitLookup.TryGetValue(characterName, out CharacterPortrait portrait))
         {
             return portrait.GetExpression(expressionName);
+        }
+        
+        Debug.LogWarning($"[DialogueManager] No portrait data found for character '{characterName}'");
+        return null;
+    }
+    
+    /// <summary>
+    /// Get full body portrait sprite for a specific character and pose.
+    /// </summary>
+    public Sprite GetFullBodyPortrait(string characterName, string portraitName)
+    {
+        if (portraitLookup.TryGetValue(characterName, out CharacterPortrait portrait))
+        {
+            return portrait.GetFullBodyPortrait(portraitName);
         }
         
         Debug.LogWarning($"[DialogueManager] No portrait data found for character '{characterName}'");
@@ -209,6 +224,7 @@ public class DialogueManager : MonoBehaviour
             }
 
             controlsFrozen = trigger.freezeControls;
+            currentTrigger = trigger; // Track this trigger
             ShowNextDialogue();
         }
     }
@@ -223,16 +239,35 @@ public class DialogueManager : MonoBehaviour
             controlsFrozen = false;
             DialogueBoxController.Instance?.Hide();
             Debug.Log("[DialogueManager] Dialogue queue empty, hiding box");
+            
+            // Check if we should transition to next scene
+            if (currentTrigger != null && !string.IsNullOrEmpty(currentTrigger.nextScene))
+            {
+                Debug.Log($"[DialogueManager] Trigger complete with nextScene: {currentTrigger.nextScene}");
+                EventBus.Instance.Publish(new GameEvent(
+                    EventNames.LevelComplete,
+                    target: currentTrigger.nextScene
+                ));
+            }
+            
+            currentTrigger = null;
             return;
         }
 
         DialogueLine line = dialogueQueue.Dequeue();
         isShowingDialogue = true;
 
-        Debug.Log($"[DialogueManager] Showing dialogue - Speaker: {line.speaker}, Expression: {line.expression}, Text: {line.text}");
+        Debug.Log($"[DialogueManager] Showing dialogue - Speaker: {line.speaker}, Expression: {line.expression}, FullBody: {line.fullBody}, Text: {line.text}");
 
         // Get portrait sprite for this speaker and expression
         Sprite portraitSprite = GetPortraitSprite(line.speaker, line.expression);
+        
+        // Get full body portrait if specified
+        Sprite fullBodySprite = null;
+        if (!string.IsNullOrEmpty(line.fullBody))
+        {
+            fullBodySprite = GetFullBodyPortrait(line.speaker, line.fullBody);
+        }
 
         // Format dialogue with speaker name
         string displayText = string.IsNullOrEmpty(line.speaker) 
@@ -245,8 +280,8 @@ public class DialogueManager : MonoBehaviour
             displayText += "\n\n(Press [A] to continue)";
         }
 
-        Debug.Log($"[DialogueManager] Calling DialogueBoxController.Show with text length: {displayText.Length}, portrait: {(portraitSprite != null ? "YES" : "NO")}");
-        DialogueBoxController.Instance?.Show(displayText, portraitSprite, !controlsFrozen);
+        Debug.Log($"[DialogueManager] Calling DialogueBoxController.Show with text length: {displayText.Length}, portrait: {(portraitSprite != null ? "YES" : "NO")}, fullBody: {(fullBodySprite != null ? "YES" : "NO")}");
+        DialogueBoxController.Instance?.Show(displayText, portraitSprite, fullBodySprite, !controlsFrozen);
     }
 
     /// <summary>

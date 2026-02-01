@@ -90,9 +90,9 @@ public class LevelLoader : MonoBehaviour
                 Vector3 position = new Vector3((col + 0.5f) * gridSize, 0, -(row + 0.5f) * gridSize) + totalOffset;
                 
                 // Process cell based on character
-                if (cell == ' ')
+                if (cell == ' ' || cell == '.')
                 {
-                    // Empty space, do nothing
+                    // Empty space (space or period), do nothing
                     continue;
                 }
                 else if (cell == 'p' || cell == 'P')
