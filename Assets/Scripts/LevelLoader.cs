@@ -8,6 +8,7 @@ public class LevelLoader : MonoBehaviour
     [Header("Prefabs")]
     public GameObject clutterBlockPrefab;
     public GameObject playerPrefab;
+    public GameObject partnerPrefab;
     public GameObject groundPlanePrefab;
     
     [Header("Grid Settings")]
@@ -52,8 +53,6 @@ public class LevelLoader : MonoBehaviour
         // Store anchor offset in GridManager so coordinate conversions work correctly
         GridManager.AnchorOffset = totalOffset;
         
-        Debug.Log($"Loading level - Anchor: {(anchorObject != null ? anchorObject.name : "None")}, Position: {(anchorObject != null ? anchorObject.position.ToString() : "None")}, Custom Offset: {anchorOffset}, Total: {totalOffset}");
-        
         // Split into lines
         string[] lines = levelData.Split('\n');
         
@@ -65,8 +64,18 @@ public class LevelLoader : MonoBehaviour
             maxCols = Mathf.Max(maxCols, line.TrimEnd('\r').Length);
         }
         
+        // Store grid dimensions for bounds checking
+        GridManager.GridRows = maxRows;
+        GridManager.GridCols = maxCols;
+        
+        Debug.Log($"Loading level - Anchor: {(anchorObject != null ? anchorObject.name : "None")}, Position: {(anchorObject != null ? anchorObject.position.ToString() : "None")}, Custom Offset: {anchorOffset}, Total: {totalOffset}, Size: {maxCols}x{maxRows}");
+        
         // Create ground plane
         CreateGroundPlane(maxRows, maxCols, totalOffset);
+        
+        // Track spawned players for partner linking
+        GameObject mainPlayer = null;
+        GameObject partner = null;
         
         for (int row = 0; row < lines.Length; row++)
         {
@@ -88,16 +97,43 @@ public class LevelLoader : MonoBehaviour
                 }
                 else if (cell == 'p' || cell == 'P')
                 {
-                    // Player starting position
-                    if (playerPrefab != null)
+                    // Player starting position - P = main (active), p = partner (inactive)
+                    bool isMainPlayer = cell == 'P';
+                    GameObject prefab = isMainPlayer ? playerPrefab : partnerPrefab;
+                    
+                    Debug.Log($"Spawning {(isMainPlayer ? "Main" : "Partner")} player. Character: '{cell}', Prefab: {(prefab != null ? prefab.name : "NULL")}, PlayerPrefab: {(playerPrefab != null ? playerPrefab.name : "NULL")}, PartnerPrefab: {(partnerPrefab != null ? partnerPrefab.name : "NULL")}");
+                    
+                    if (prefab != null)
                     {
                         // Position at half the scaled height (playerScale * 0.5) to center on grid
                         position.y = playerScale * 0.5f;
-                        GameObject player = Instantiate(playerPrefab, position, Quaternion.identity);
+                        GameObject player = Instantiate(prefab, position, Quaternion.identity);
                         player.transform.localScale = Vector3.one * playerScale;
-                        player.tag = "Player"; // Tag for camera to find
                         
-                        Debug.Log($"Player spawned at {position}");
+                        // Only tag main player so camera finds it first
+                        if (isMainPlayer)
+                        {
+                            player.tag = "Player";
+                        }
+                        
+                        // Get controller and set active state
+                        HomeBoyStateController controller = player.GetComponent<HomeBoyStateController>();
+                        if (controller != null)
+                        {
+                            controller.isActive = isMainPlayer;
+                        }
+                        
+                        // Track for partner linking
+                        if (isMainPlayer)
+                        {
+                            mainPlayer = player;
+                        }
+                        else
+                        {
+                            partner = player;
+                        }
+                        
+                        Debug.Log($"{(isMainPlayer ? "Main player" : "Partner")} spawned at {position}");
                         
                         // Ensure rigidbody is kinematic for grid-based movement
                         Rigidbody rb = player.GetComponent<Rigidbody>();
@@ -106,12 +142,11 @@ public class LevelLoader : MonoBehaviour
                             rb.isKinematic = true;
                             rb.useGravity = false;
                             rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
-                            Debug.Log("Player Rigidbody: kinematic with continuous collision detection");
                         }
                     }
                     else
                     {
-                        Debug.LogError("Player prefab not assigned!");
+                        Debug.LogError($"{(isMainPlayer ? "Player" : "Partner")} prefab not assigned!");
                     }
                 }
                 else if (cell >= '1' && cell <= '9')
@@ -123,6 +158,29 @@ public class LevelLoader : MonoBehaviour
                 {
                     // Immovable furniture (chair)
                     SpawnClutterBlock(position, '1', true); // Use level 1 trash model for now
+                }
+            }
+        }
+        
+        // Link partners together and notify PlayerInputManager
+        if (mainPlayer != null && partner != null)
+        {
+            HomeBoyStateController mainController = mainPlayer.GetComponent<HomeBoyStateController>();
+            HomeBoyStateController partnerController = partner.GetComponent<HomeBoyStateController>();
+            
+            if (mainController != null && partnerController != null)
+            {
+                // Notify PlayerInputManager about the spawned players
+                PlayerInputManager inputManager = FindFirstObjectByType<PlayerInputManager>();
+                if (inputManager != null)
+                {
+                    inputManager.SetPlayers(mainController, partnerController);
+                    inputManager.Activate();
+                    Debug.Log("Players registered with PlayerInputManager and input activated");
+                }
+                else
+                {
+                    Debug.LogError("PlayerInputManager not found in scene! Input will not work.");
                 }
             }
         }
@@ -159,13 +217,14 @@ public class LevelLoader : MonoBehaviour
         float scaleZ = (rows * gridSize) / 10f;
         ground.transform.localScale = new Vector3(scaleX, 1, scaleZ);
         
-        // Apply red material to ground plane
+        // Apply muted rug material to ground plane (dingy apartment rug color)
         MeshRenderer renderer = ground.GetComponent<MeshRenderer>();
         if (renderer != null)
         {
-            Material redMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-            redMaterial.color = Color.red;
-            renderer.material = redMaterial;
+            Material rugMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            // Muted brownish-red, like an old dingy apartment rug
+            rugMaterial.color = new Color(0.45f, 0.25f, 0.22f, 1f);
+            renderer.material = rugMaterial;
         }
         
         Debug.Log($"Ground plane created: {cols}x{rows} grid, scale: {scaleX}x{scaleZ}");

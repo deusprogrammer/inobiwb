@@ -12,6 +12,8 @@ public class PlayerPushingState : HomeBoyState
 
     public override void EnterState(GameObjectStateController controller)
     {
+        Debug.Log($"[PlayerPushingState] EnterState called for {controller.gameObject.name}");
+        
         // Change cube color to red when entering pushing state
         HomeBoyStateController homeBoyController = (HomeBoyStateController)controller;
         Renderer renderer = homeBoyController.GetComponent<Renderer>();
@@ -19,7 +21,7 @@ public class PlayerPushingState : HomeBoyState
         {
             originalColor = renderer.material.color;
             renderer.material.color = Color.red;
-            Debug.Log("Entering Pushing State - color changed to red");
+            Debug.Log($"[PlayerPushingState] {controller.gameObject.name} - color changed to red");
         }
         
         // Push the targeted block if there is one
@@ -61,17 +63,20 @@ public class PlayerPushingState : HomeBoyState
 
     public override void OnComplete(GameObjectStateController controller)
     {
+        Debug.Log($"[PlayerPushingState] OnComplete called for {controller.gameObject.name}, transitioning to IDLE");
         controller.ChangeState(HomeBoyStates.IDLE);
     }
 
     public override void ExitState(GameObjectStateController controller)
     {
+        Debug.Log($"[PlayerPushingState] ExitState called for {controller.gameObject.name}");
         // Restore original color when leaving pushing state
         HomeBoyStateController homeBoyController = (HomeBoyStateController)controller;
         Renderer renderer = homeBoyController.GetComponent<Renderer>();
         if (renderer != null)
         {
             renderer.material.color = originalColor;
+            Debug.Log($"[PlayerPushingState] {controller.gameObject.name} - color restored");
         }
     }
 

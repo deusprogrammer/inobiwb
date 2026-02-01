@@ -212,25 +212,25 @@ public class ClutterBlockStateController : GameObjectStateController
         if (isTargeted == targeted) return;
         
         isTargeted = targeted;
-        Renderer renderer = GetComponent<Renderer>();
-        if (renderer != null)
+        
+        // Apply outline effect to the visual model if it exists
+        if (visualModel != null)
         {
-            if (targeted)
+            Renderer[] renderers = visualModel.GetComponentsInChildren<Renderer>();
+            foreach (Renderer renderer in renderers)
             {
-                // Make it VERY visible with bright emission and scale increase
-                renderer.material.EnableKeyword("_EMISSION");
-                // Use bright white emission for high visibility
-                renderer.material.SetColor("_EmissionColor", Color.white * 2f);
-                
-                // Scale up slightly
-                transform.localScale = originalScale * 1.15f;
-            }
-            else
-            {
-                // Remove emission and restore scale
-                renderer.material.DisableKeyword("_EMISSION");
-                renderer.material.SetColor("_EmissionColor", Color.black);
-                transform.localScale = originalScale;
+                if (targeted)
+                {
+                    // Add red emission to create outline effect
+                    renderer.material.EnableKeyword("_EMISSION");
+                    renderer.material.SetColor("_EmissionColor", Color.red * 1.5f);
+                }
+                else
+                {
+                    // Remove emission
+                    renderer.material.DisableKeyword("_EMISSION");
+                    renderer.material.SetColor("_EmissionColor", Color.black);
+                }
             }
         }
     }

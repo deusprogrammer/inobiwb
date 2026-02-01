@@ -26,6 +26,14 @@ public class PlayerMovingState : HomeBoyState
         
         Debug.Log($"[Movement] Attempting to move from {currentGridPos} to {targetGridPos} (direction: {direction})");
         
+        // Check if target position is within bounds
+        if (!GridManager.IsWithinBounds(targetGridPos))
+        {
+            Debug.Log($"[Movement] Target position {targetGridPos} is out of bounds");
+            controller.ChangeState(HomeBoyStates.IDLE);
+            return;
+        }
+        
         // Check if target position is blocked by a clutter block
         Vector3 targetWorldPos = GridManager.GridToWorld(targetGridPos);
         ClutterBlockStateController blockAtTarget = GridManager.Instance.GetBlockAt(targetWorldPos);
@@ -102,6 +110,7 @@ public class PlayerMovingState : HomeBoyState
     
     public override void OnMove()
     {
+        Debug.Log($"[PlayerMovingState] OnMove called - already moving, updating direction");
         // Update movement direction
         // Movement applied in Tick()
     }

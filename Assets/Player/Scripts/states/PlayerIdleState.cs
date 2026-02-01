@@ -18,6 +18,7 @@ public class PlayerIdleState : HomeBoyState
         // Transition to moving state
         // State transition handled by HomeBoyStateController
         // Note: stateManager is still set in Initialize, safe to use for state transitions
+        Debug.Log($"[PlayerIdleState] OnMove called, transitioning to MOVING");
         this.stateManager.ChangeState(HomeBoyStates.MOVING);
     }
 

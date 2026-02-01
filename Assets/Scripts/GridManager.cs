@@ -23,6 +23,12 @@ public class GridManager : MonoBehaviour
     private static Vector3 anchorOffset = Vector3.zero;
     public static Vector3 AnchorOffset { get { return anchorOffset; } set { anchorOffset = value; } }
     
+    // Grid dimensions (set by LevelLoader)
+    private static int gridRows = 0;
+    private static int gridCols = 0;
+    public static int GridRows { get { return gridRows; } set { gridRows = value; } }
+    public static int GridCols { get { return gridCols; } set { gridCols = value; } }
+    
     void Awake()
     {
         if (instance == null)
@@ -82,6 +88,12 @@ public class GridManager : MonoBehaviour
         );
         
         return relativePos + anchorOffset;
+    }
+    
+    public static bool IsWithinBounds(Vector3Int gridPosition)
+    {
+        return gridPosition.x >= 0 && gridPosition.x < gridCols &&
+               gridPosition.z >= 0 && gridPosition.z < gridRows;
     }
     
     public void RegisterBlock(ClutterBlockStateController block)

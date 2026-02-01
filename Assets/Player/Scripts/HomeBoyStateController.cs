@@ -10,6 +10,11 @@ public class HomeBoyStates
 
 public class HomeBoyStateController : GameObjectStateController
 {
+    [Header("Partner System")]
+    public HomeBoyStateController partnerController;
+    public bool isActive = true;
+    
+    private PlayerInput playerInput;
     private Vector2 moveInput;
     public Vector2 MoveInput { get { return moveInput; } }
 
@@ -32,16 +37,34 @@ public class HomeBoyStateController : GameObjectStateController
     private GameObject targetIndicator;
     private Vector3Int currentTargetGridPos;
 
-    public new static HomeBoyStateController Instance { get; private set; }
+    // Note: Removed singleton Instance - each player is independent
+    
+    void Awake()
+    {
+        // Override base class Awake to prevent singleton behavior
+        // Each player needs to be independent
+        
+        // CRITICAL: Instantiate copies of ScriptableObject states so each player has its own
+        // Otherwise both players share the same state objects and stateManager gets overwritten
+        for (int i = 0; i < gameObjectStates.Length; i++)
+        {
+            gameObjectStates[i].gameObjectState = Instantiate(gameObjectStates[i].gameObjectState);
+        }
+        
+        Debug.Log($"[{gameObject.name}] Created unique state instances");
+    }
 
     public override void OnStart()
     {
         collider = GetComponent<Collider>();
         rigidBody = GetComponent<Rigidbody>();
+        playerInput = GetComponent<PlayerInput>();
+        
+        // Keep PlayerInput always enabled - we gate input with isActive flag instead
         
         // Initialize grid position from world position
         gridPosition = GridManager.WorldToGrid(transform.position);
-        Debug.Log($"[Player] Starting at grid position: {gridPosition}");
+        Debug.Log($"[{gameObject.name}] Starting at grid position: {gridPosition}, isActive: {isActive}");
         
         CreateTargetIndicator();
         ChangeState(HomeBoyStates.IDLE);
@@ -92,12 +115,21 @@ public class HomeBoyStateController : GameObjectStateController
 
     public override void OnUpdate(float deltaTime)
     {
-        // Update targeted block based on grid position and direction
-        UpdateTargetedBlock();
+        // Only update targeting for active player
+        if (isActive)
+        {
+            UpdateTargetedBlock();
+        }
     }
     
     private void UpdateTargetedBlock()
     {
+        // Safety check
+        if (GridManager.Instance == null)
+        {
+            return;
+        }
+        
         // Calculate target grid position (one space in current direction)
         Vector3Int targetGridPos = gridPosition + gridDirection;
         Vector3 targetWorldPos = GridManager.GridToWorld(targetGridPos);
@@ -148,9 +180,18 @@ public class HomeBoyStateController : GameObjectStateController
         
     }
 
-    void OnMove(InputValue inputValue) 
+    public void HandleMove(InputValue inputValue) 
     {
+        Debug.Log($"[{gameObject.name}] HandleMove called, isActive: {isActive}");
+        
+        if (!isActive)
+        {
+            Debug.Log($"[{gameObject.name}] HandleMove BLOCKED - not active");
+            return;
+        }
+        
         moveInput = inputValue.Get<Vector2>();
+        Debug.Log($"[{gameObject.name}] HandleMove processing input: {moveInput}, currentState: {CurrentStateName}");
 
         // Update grid direction based on input (lock to cardinal directions)
         if (moveInput.sqrMagnitude > 0)
@@ -172,9 +213,36 @@ public class HomeBoyStateController : GameObjectStateController
         ((HomeBoyState)currentState)?.OnMove();
     }
 
-    void OnPush()
+    public void HandlePush()
     {
+        Debug.Log($"[{gameObject.name}] HandlePush called, isActive: {isActive}");
+        
+        if (!isActive)
+        {
+            Debug.Log($"[{gameObject.name}] HandlePush BLOCKED - not active");
+            return;
+        }
+        
         ((HomeBoyState)currentState)?.OnPush();
+    }
+    
+    public void HandleLook(InputValue inputValue)
+    {
+        if (!isActive) return;
+        
+        Vector2 lookInput = inputValue.Get<Vector2>();
+        
+        // Find and tell the camera to rotate
+        CameraController camera = FindFirstObjectByType<CameraController>();
+        if (camera != null)
+        {
+            camera.RotateCamera(lookInput);
+        }
+    }
+    
+    void OnCycleCamera()
+    {
+        // Removed - no longer using camera cycling
     }
     
     void OnDrawGizmos()
