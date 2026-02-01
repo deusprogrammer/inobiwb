@@ -618,12 +618,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   levelFile: {fileID: 4900000, guid: 9b2e333e3d170ee479677c9b948c1a68, type: 3}
   clutterBlockPrefab: {fileID: 2666181008648691087, guid: 07cd3019d2535f146bfa84248563ef6c, type: 3}
-  playerPrefab: {fileID: 6079557860143384374, guid: ecde614af30d07247b01b23cbe5f98ca, type: 3}
+  playerPrefab: {fileID: 8722345575987829596, guid: 3cb4f727b9f30d748ae62dbe2209d911, type: 3}
   partnerPrefab: {fileID: 8722345575987829596, guid: b5177c5d742bd5a4889490340d8f9125, type: 3}
   groundPlanePrefab: {fileID: 3576067603011034132, guid: f73ac00abf8c7174495766ed7d20da3c, type: 3}
   gridSize: 1
   objectScale: 1
-  playerScale: 1.5
+  playerScale: 1
   anchorObject: {fileID: 1050610383138442608}
   anchorOffset: {x: 0, y: 0, z: 0}
   spawnGroundPlane: 1

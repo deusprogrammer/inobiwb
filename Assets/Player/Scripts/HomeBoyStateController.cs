@@ -45,6 +45,11 @@ public class HomeBoyStateController : GameObjectStateController
     private ClutterBlockStateController targetedBlock = null;
     public ClutterBlockStateController TargetedBlock { get { return targetedBlock; } }
     
+    private HomeBoyStateController targetedPlayer = null;
+    public HomeBoyStateController TargetedPlayer { get { return targetedPlayer; } }
+    
+    private TextMesh actionText;
+    
     public ClutterBlockType[] AllowedPushTypes { get { return allowedPushTypes; } }
     public bool DisableRotation { get { return disableRotation; } }
 
@@ -81,8 +86,26 @@ public class HomeBoyStateController : GameObjectStateController
         gridPosition = GridManager.WorldToGrid(transform.position);
         Debug.Log($"[{gameObject.name}] Starting at grid position: {gridPosition}, isActive: {isActive}");
         
+        CreateActionText();
         CreateTargetIndicator();
         ChangeState(HomeBoyStates.IDLE);
+    }
+    
+    private void CreateActionText()
+    {
+        // Create a child GameObject for the action text
+        GameObject textObj = new GameObject("ActionText");
+        textObj.transform.SetParent(transform);
+        textObj.transform.localPosition = new Vector3(0, 1.5f, 0); // Position above the player
+        
+        // Add TextMesh component
+        actionText = textObj.AddComponent<TextMesh>();
+        actionText.anchor = TextAnchor.MiddleCenter;
+        actionText.alignment = TextAlignment.Center;
+        actionText.fontSize = 40;
+        actionText.color = Color.yellow;
+        actionText.characterSize = 0.08f;
+        actionText.text = ""; // Start hidden
     }
     
     void OnDestroy()
@@ -166,7 +189,23 @@ public class HomeBoyStateController : GameObjectStateController
         ClutterBlockStateController newTargetBlock = GridManager.Instance.GetBlockAt(targetWorldPos);
         Debug.Log($"[Targeting] Block at target: {(newTargetBlock != null ? newTargetBlock.gameObject.name : "NULL")}");
         
-        // Update targeting
+        // Check for player at target position (only if no block)
+        HomeBoyStateController newTargetPlayer = null;
+        if (newTargetBlock == null)
+        {
+            // Check if partner is at target position
+            if (partnerController != null)
+            {
+                Vector3Int partnerGridPos = partnerController.GridPosition;
+                if (partnerGridPos == targetGridPos)
+                {
+                    newTargetPlayer = partnerController;
+                    Debug.Log($"[Targeting] Partner at target position");
+                }
+            }
+        }
+        
+        // Update block targeting
         if (targetedBlock != newTargetBlock)
         {
             // Untarget old block
@@ -180,6 +219,40 @@ public class HomeBoyStateController : GameObjectStateController
             if (targetedBlock != null)
             {
                 targetedBlock.SetTargeted(true);
+            }
+        }
+        
+        // Update player targeting
+        if (targetedPlayer != newTargetPlayer)
+        {
+            // Untarget old player
+            if (targetedPlayer != null && targetedPlayer.actionText != null)
+            {
+                targetedPlayer.actionText.text = "";
+            }
+            
+            // Target new player
+            targetedPlayer = newTargetPlayer;
+            if (targetedPlayer != null && targetedPlayer.actionText != null)
+            {
+                targetedPlayer.actionText.text = "hug";
+            }
+        }
+        
+        // Update own action text based on what we're targeting
+        if (actionText != null)
+        {
+            if (targetedBlock != null)
+            {
+                actionText.text = "push";
+            }
+            else if (targetedPlayer != null)
+            {
+                actionText.text = "hug";
+            }
+            else
+            {
+                actionText.text = "";
             }
         }
     }
@@ -252,6 +325,18 @@ public class HomeBoyStateController : GameObjectStateController
         {
             Debug.Log($"[{gameObject.name}] HandlePush advancing dialogue");
             DialogueManager.Instance.AdvanceDialogue();
+            return;
+        }
+        
+        // Check if targeting partner - fire hug event instead of push
+        if (targetedPlayer != null)
+        {
+            Debug.Log($"[{gameObject.name}] Hugging partner: {targetedPlayer.actorLabel}");
+            EventBus.Instance.Publish(new GameEvent(
+                EventNames.Hug,
+                actor: actorLabel,
+                target: targetedPlayer.actorLabel
+            ));
             return;
         }
         

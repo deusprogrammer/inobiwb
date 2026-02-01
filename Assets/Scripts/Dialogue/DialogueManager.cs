@@ -56,6 +56,12 @@ public class DialogueManager : MonoBehaviour
         {
             triggerData = JsonUtility.FromJson<DialogueTriggerData>(triggersJson.text);
             Debug.Log($"[DialogueManager] Loaded {triggerData.triggers.Count} triggers");
+            
+            // Log each trigger ID for debugging
+            foreach (DialogueTrigger trigger in triggerData.triggers)
+            {
+                Debug.Log($"[DialogueManager] - Trigger loaded: {trigger.id} (event: {trigger.eventName})");
+            }
         }
         catch (System.Exception ex)
         {
@@ -76,6 +82,7 @@ public class DialogueManager : MonoBehaviour
         EventBus.Instance.Subscribe(EventNames.ItemCollected, OnGameEvent);
         EventBus.Instance.Subscribe(EventNames.FurnitureMoved, OnGameEvent);
         EventBus.Instance.Subscribe(EventNames.FurnitureMoveFailure, OnGameEvent);
+        EventBus.Instance.Subscribe(EventNames.Hug, OnGameEvent);
         
         Debug.Log("[DialogueManager] Subscribed to all events");
     }
@@ -93,6 +100,7 @@ public class DialogueManager : MonoBehaviour
         EventBus.Instance.Unsubscribe(EventNames.ItemCollected, OnGameEvent);
         EventBus.Instance.Unsubscribe(EventNames.FurnitureMoved, OnGameEvent);
         EventBus.Instance.Unsubscribe(EventNames.FurnitureMoveFailure, OnGameEvent);
+        EventBus.Instance.Unsubscribe(EventNames.Hug, OnGameEvent);
     }
 
     private void OnGameEvent(GameEvent evt)

@@ -146,6 +146,26 @@
           "text": "I mean. Impressive. Truly."
         }
       ]
+    },
+
+    {
+      "id": "tutorial_hug",
+      "eventName": "hug",
+      "actor": "homer",
+      "freezeControls": true,
+      "maxCount": 1,
+      "dialogue": [
+        {
+          "speaker": "Casa",
+          "expression": "pensive",
+          "text": "…You know, I wasn’t sure about this whole hugging thing at first."
+        },
+        {
+          "speaker": "Casa",
+          "expression": "teasing_smile",
+          "text": "But I think I like it."
+        }
+      ]
     }
 
   ]

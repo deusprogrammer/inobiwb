@@ -22,4 +22,5 @@ public static class EventNames
     public const string ItemCollected = "itemCollected";
     public const string FurnitureMoved = "furnitureMoved";
     public const string FurnitureMoveFailure = "furnitureMoveFailure";
+    public const string Hug = "hug";
 }
