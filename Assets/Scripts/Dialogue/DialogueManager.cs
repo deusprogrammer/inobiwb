@@ -175,16 +175,21 @@ public class DialogueManager : MonoBehaviour
 
     private void ShowNextDialogue()
     {
+        Debug.Log($"[DialogueManager] ShowNextDialogue called, queue count: {dialogueQueue.Count}");
+        
         if (dialogueQueue.Count == 0)
         {
             isShowingDialogue = false;
             controlsFrozen = false;
             DialogueBoxController.Instance?.Hide();
+            Debug.Log("[DialogueManager] Dialogue queue empty, hiding box");
             return;
         }
 
         DialogueLine line = dialogueQueue.Dequeue();
         isShowingDialogue = true;
+
+        Debug.Log($"[DialogueManager] Showing dialogue - Speaker: {line.speaker}, Text: {line.text}");
 
         // Format dialogue with speaker name
         string displayText = string.IsNullOrEmpty(line.speaker) 
@@ -197,6 +202,7 @@ public class DialogueManager : MonoBehaviour
             displayText += "\n\n(Press [A] to continue)";
         }
 
+        Debug.Log($"[DialogueManager] Calling DialogueBoxController.Show with text length: {displayText.Length}");
         DialogueBoxController.Instance?.Show(displayText, !controlsFrozen);
     }
 

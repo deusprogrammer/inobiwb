@@ -592,10 +592,10 @@ GameObject:
   m_Component:
   - component: {fileID: 680188485}
   - component: {fileID: 680188484}
+  - component: {fileID: 680188490}
   - component: {fileID: 680188486}
   - component: {fileID: 680188488}
   - component: {fileID: 680188489}
-  - component: {fileID: 680188490}
   - component: {fileID: 680188487}
   m_Layer: 0
   m_Name: Game Controller
@@ -616,14 +616,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 130af78c4d08f4f47a8733c04b60119c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  levelFile: {fileID: 4900000, guid: 99bb5f4590693454e901eb1d5d71d688, type: 3}
+  levelFile: {fileID: 4900000, guid: 9b2e333e3d170ee479677c9b948c1a68, type: 3}
   clutterBlockPrefab: {fileID: 2666181008648691087, guid: 07cd3019d2535f146bfa84248563ef6c, type: 3}
-  playerPrefab: {fileID: 2453737346493176797, guid: 8bccbebc7c84dda4e9608389f1749509, type: 3}
-  partnerPrefab: {fileID: 3877359437168813885, guid: 727a5e1ad791d5e459b02e688e440772, type: 3}
+  playerPrefab: {fileID: 6079557860143384374, guid: ecde614af30d07247b01b23cbe5f98ca, type: 3}
+  partnerPrefab: {fileID: 8722345575987829596, guid: b5177c5d742bd5a4889490340d8f9125, type: 3}
   groundPlanePrefab: {fileID: 3576067603011034132, guid: f73ac00abf8c7174495766ed7d20da3c, type: 3}
   gridSize: 1
   objectScale: 1
-  playerScale: 1
+  playerScale: 1.5
   anchorObject: {fileID: 1050610383138442608}
   anchorOffset: {x: 0, y: 0, z: 0}
   spawnGroundPlane: 1
@@ -729,7 +729,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce37448e1786dae4a8c22b67c3cf8f65, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  triggersJson: {fileID: 4900000, guid: 705792c1fc9191c40aafff2701223fc6, type: 3}
+  triggersJson: {fileID: 4900000, guid: c0147598f85efb44bb3b821069e96c78, type: 3}
 --- !u!1 &810705191
 GameObject:
   m_ObjectHideFlags: 0

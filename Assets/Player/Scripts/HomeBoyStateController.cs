@@ -22,6 +22,10 @@ public class HomeBoyStateController : GameObjectStateController
     [Tooltip("Which clutter block types this player can push")]
     public ClutterBlockType[] allowedPushTypes = { ClutterBlockType.Trash, ClutterBlockType.Laundry, ClutterBlockType.Dishes };
     
+    [Header("Visual Settings")]
+    [Tooltip("Disable rotation for billboard sprites that always face camera")]
+    public bool disableRotation = false;
+    
     private PlayerInput playerInput;
     private Vector2 moveInput;
     public Vector2 MoveInput { get { return moveInput; } }
@@ -42,6 +46,7 @@ public class HomeBoyStateController : GameObjectStateController
     public ClutterBlockStateController TargetedBlock { get { return targetedBlock; } }
     
     public ClutterBlockType[] AllowedPushTypes { get { return allowedPushTypes; } }
+    public bool DisableRotation { get { return disableRotation; } }
 
     // Visual indicator for targeted grid cell
     private GameObject targetIndicator;

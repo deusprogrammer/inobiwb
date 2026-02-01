@@ -52,8 +52,8 @@ public class PlayerMovingState : HomeBoyState
             
             isMoving = true;
             
-            // Update rotation to face movement direction
-            if (direction.x != 0 || direction.z != 0)
+            // Update rotation to face movement direction (unless disabled for billboards)
+            if (!homeBoyController.DisableRotation && (direction.x != 0 || direction.z != 0))
             {
                 Vector3 lookDir = new Vector3(direction.x, 0, direction.z);
                 Quaternion targetRotation = Quaternion.LookRotation(lookDir);
