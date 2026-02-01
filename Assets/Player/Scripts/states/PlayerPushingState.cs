@@ -39,14 +39,14 @@ public class PlayerPushingState : HomeBoyState
             
             Debug.Log($"[Push] Attempting to push block '{homeBoyController.TargetedBlock.gameObject.name}' from grid {blockGridPos} to {targetGridPos} (world: {targetPosition}), direction: {direction}");
             
-            if (CanPushToPosition(homeBoyController.TargetedBlock, targetPosition))
+            if (CanPushToPosition(homeBoyController, homeBoyController.TargetedBlock, targetPosition))
             {
                 Debug.Log($"[Push] Push allowed! Executing push...");
                 homeBoyController.TargetedBlock.Push(pushDirection);
             }
             else
             {
-                Debug.Log($"[Push] Cannot push - target position blocked or immovable");
+                Debug.Log($"[Push] Cannot push - target position blocked, immovable, or type not allowed");
             }
         }
         else
@@ -55,10 +55,10 @@ public class PlayerPushingState : HomeBoyState
         }
     }
     
-    private bool CanPushToPosition(ClutterBlockStateController blockToPush, Vector3 targetPosition)
+    private bool CanPushToPosition(HomeBoyStateController player, ClutterBlockStateController blockToPush, Vector3 targetPosition)
     {
-        // Use GridManager for efficient lookup
-        return GridManager.Instance.CanPushBlock(blockToPush, targetPosition);
+        // Use GridManager for efficient lookup, passing player's allowed push types
+        return GridManager.Instance.CanPushBlock(blockToPush, targetPosition, player.AllowedPushTypes);
     }
 
     public override void OnComplete(GameObjectStateController controller)

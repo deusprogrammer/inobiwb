@@ -201,3 +201,4 @@ MonoBehaviour:
     cooldown: 0
   partnerController: {fileID: 0}
   isActive: 1
+  allowedPushTypes: 0000000001000000

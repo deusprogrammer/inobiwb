@@ -21,10 +21,24 @@ public class CameraController : MonoBehaviour
     
     private float currentRotationY = 0f;
     private float currentRotationX = 45f;  // Vertical angle (pitch)
+
+    private void RefocusOnTarget() 
+    {
+        if (target != null)
+        {
+            // Instantly move camera to target position with offset
+            Quaternion rotation = Quaternion.Euler(currentRotationX, currentRotationY, 0);
+            Vector3 rotatedOffset = rotation * offset;
+            transform.position = target.position + rotatedOffset;
+            transform.LookAt(target);
+            Debug.Log("Camera refocused on target at position: " + target.position);
+        }
+    }
     
     public void SetTarget(Transform newTarget)
     {
         target = newTarget;
+        RefocusOnTarget();
         Debug.Log($"Camera target changed to: {newTarget.name}");
     }
     
@@ -36,19 +50,7 @@ public class CameraController : MonoBehaviour
     }
     
     void LateUpdate()
-    {
-        // Keep searching for player until found (handles spawn timing)
-        if (target == null)
-        {
-            GameObject player = GameObject.FindWithTag("Player");
-            if (player != null)
-            {
-                target = player.transform;
-                Debug.Log("Camera found player instance at: " + target.position);
-            }
-            return;
-        }
-        
+    {        
         // Calculate desired position using rotated offset
         Quaternion rotation = Quaternion.Euler(currentRotationX, currentRotationY, 0);
         Vector3 rotatedOffset = rotation * offset;
@@ -57,9 +59,7 @@ public class CameraController : MonoBehaviour
         // Smoothly move camera to desired position
         Vector3 smoothedPosition = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed * Time.deltaTime);
         transform.position = smoothedPosition;
-        
-        // Always look at the target
-        transform.LookAt(target);
+
     }
     
     public void RotateCamera(Vector2 lookInput)

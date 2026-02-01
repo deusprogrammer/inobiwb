@@ -39,6 +39,14 @@ public class PlayerInputManager : MonoBehaviour
             Debug.Log("[PlayerInputManager] Players linked");
         }
         
+        // Set camera to follow the main player immediately
+        CameraController camera = FindFirstObjectByType<CameraController>();
+        if (camera != null && mainPlayer != null)
+        {
+            camera.SetTarget(mainPlayer.transform);
+            Debug.Log($"[PlayerInputManager] Camera set to follow main player: {mainPlayer.gameObject.name}");
+        }
+        
         Debug.Log($"[PlayerInputManager] Players set - Main: {mainPlayer?.gameObject.name}, Partner: {partner?.gameObject.name}, Active: {activePlayer?.gameObject.name}");
     }
     

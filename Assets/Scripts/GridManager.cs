@@ -142,12 +142,29 @@ public class GridManager : MonoBehaviour
         return GetBlockAt(worldPosition) != null;
     }
     
-    public bool CanPushBlock(ClutterBlockStateController blockToPush, Vector3 targetWorldPosition)
+    public bool CanPushBlock(ClutterBlockStateController blockToPush, Vector3 targetWorldPosition, ClutterBlockType[] allowedTypes)
     {
         // Cannot push immovable blocks
         if (blockToPush.isImmovable)
         {
             Debug.Log($"[GridManager] CanPushBlock: Block '{blockToPush.gameObject.name}' is immovable");
+            return false;
+        }
+        
+        // Check if player is allowed to push this block type
+        bool isAllowed = false;
+        foreach (ClutterBlockType allowedType in allowedTypes)
+        {
+            if (blockToPush.blockType == allowedType)
+            {
+                isAllowed = true;
+                break;
+            }
+        }
+        
+        if (!isAllowed)
+        {
+            Debug.Log($"[GridManager] CanPushBlock: Block type '{blockToPush.blockType}' not in allowed push types");
             return false;
         }
         

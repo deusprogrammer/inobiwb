@@ -14,6 +14,10 @@ public class HomeBoyStateController : GameObjectStateController
     public HomeBoyStateController partnerController;
     public bool isActive = true;
     
+    [Header("Push Restrictions")]
+    [Tooltip("Which clutter block types this player can push")]
+    public ClutterBlockType[] allowedPushTypes = { ClutterBlockType.Trash, ClutterBlockType.Laundry, ClutterBlockType.Dishes };
+    
     private PlayerInput playerInput;
     private Vector2 moveInput;
     public Vector2 MoveInput { get { return moveInput; } }
@@ -32,6 +36,8 @@ public class HomeBoyStateController : GameObjectStateController
     
     private ClutterBlockStateController targetedBlock = null;
     public ClutterBlockStateController TargetedBlock { get { return targetedBlock; } }
+    
+    public ClutterBlockType[] AllowedPushTypes { get { return allowedPushTypes; } }
 
     // Visual indicator for targeted grid cell
     private GameObject targetIndicator;
