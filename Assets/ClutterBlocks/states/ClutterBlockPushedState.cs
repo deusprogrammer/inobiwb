@@ -57,7 +57,11 @@ public class ClutterBlockPushedState : ClutterBlockState
                 // Add levels together (cap at 4)
                 int combinedLevel = blockController.level + otherBlock.level;
                 blockController.level = Mathf.Min(combinedLevel, 4);
+                
+                // Animate to new level and update text
+                blockController.AnimateToLevel(blockController.level);
                 blockController.UpdateCountText();
+                
                 Object.Destroy(otherBlock.gameObject);
             }
             

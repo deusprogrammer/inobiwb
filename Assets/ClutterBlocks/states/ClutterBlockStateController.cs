@@ -17,6 +17,18 @@ public class ClutterBlockStateController : GameObjectStateController
     public int level = 1;
     public bool isImmovable = false; // For furniture like chairs that cannot be pushed
     
+    [Header("Visual Models")]
+    public GameObject trashModelPrefab;
+    public GameObject laundryModelPrefab;
+    public GameObject dishesModelPrefab;
+    public GameObject chairModelPrefab; // For immovable blocks
+    
+    [Header("Level Scaling")]
+    public float level1Scale = 0.75f;
+    public float level2Scale = 1.0f;
+    public float level3Scale = 1.25f;
+    public float scaleAnimationDuration = 0.3f;
+    
     [Header("Collision Settings")]
     public Vector3 colliderSize = new Vector3(0.8f, 0.8f, 0.8f);
     
@@ -27,6 +39,9 @@ public class ClutterBlockStateController : GameObjectStateController
     private Color originalColor = Color.white;
     private Vector3 originalScale;
     private TextMesh countText;
+    private GameObject visualModel; // Reference to the spawned visual model
+    private Vector3 visualModelOriginalScale; // Store the prefab's original scale
+    private Coroutine scaleCoroutine; // Track active scale animation
 
     // Removed singleton Instance - each block is independent
 
@@ -40,32 +55,60 @@ public class ClutterBlockStateController : GameObjectStateController
         // Store original scale
         originalScale = transform.localScale;
         
-        // Store original color and set based on type
-        Renderer renderer = GetComponent<Renderer>();
-        if (renderer != null)
+        // Instantiate visual model based on block type
+        GameObject modelPrefab = null;
+        
+        if (isImmovable)
         {
-            // Immovable blocks get special color
-            if (isImmovable)
+            modelPrefab = chairModelPrefab;
+        }
+        else
+        {
+            modelPrefab = blockType switch
             {
-                renderer.material.color = Color.yellow;
-            }
-            else
-            {
-                // Set color based on block type
-                switch (blockType)
-                {
-                    case ClutterBlockType.Trash:
-                        renderer.material.color = Color.black;
-                        break;
-                    case ClutterBlockType.Laundry:
-                        renderer.material.color = new Color(0.5f, 0.8f, 1.0f); // Light blue
-                        break;
-                    case ClutterBlockType.Dishes:
-                        renderer.material.color = Color.white;
-                        break;
-                }
-            }
-            originalColor = renderer.material.color;
+                ClutterBlockType.Trash => trashModelPrefab,
+                ClutterBlockType.Laundry => laundryModelPrefab,
+                ClutterBlockType.Dishes => dishesModelPrefab,
+                _ => null
+            };
+        }
+        
+        if (modelPrefab != null)
+        {
+            visualModel = Instantiate(modelPrefab, transform);
+            
+            // The parent ClutterBlock is positioned with its center at height objectScale*0.5f
+            // This positions the visual model so:
+            // - X/Z centered in the grid cell (0, 0 local)
+            // - Y offset to put the bottom of the model on the ground
+            // Since the parent's center is at objectScale*0.5f, and we want the bottom at y=0,
+            // the model should be at local y = -(objectScale*0.5f) if its pivot is at the bottom
+            // OR at local y = 0 if its pivot is at the center
+            
+            // Get the scale from the parent
+            float parentScale = transform.localScale.x; // objectScale
+            
+            // Store the prefab's rotation (already preserved by Instantiate)
+            Quaternion prefabRotation = visualModel.transform.localRotation;
+            
+            // Position the model - assuming pivot is at the bottom of the model
+            // Adjust Y to sit on ground: parent center is at height/2, so offset down by -height/2
+            float localY = -parentScale * 0.5f;
+            visualModel.transform.localPosition = new Vector3(0, localY, 0);
+            visualModel.transform.localRotation = prefabRotation; // Restore rotation
+            
+            // Store the prefab's original scale
+            visualModelOriginalScale = visualModel.transform.localScale;
+            
+            // Apply level scale multiplied by original scale
+            float levelScale = GetScaleForLevel(level);
+            visualModel.transform.localScale = visualModelOriginalScale * levelScale;
+            
+            Debug.Log($"[Block {blockID}] Spawned visual model: {modelPrefab.name} at local Y={localY}, scale {visualModel.transform.localScale} (original: {visualModelOriginalScale}, level multiplier: {levelScale})");
+        }
+        else
+        {
+            Debug.LogWarning($"[Block {blockID}] No visual model prefab assigned for {(isImmovable ? "chair" : blockType.ToString())}");
         }
         
         // Create text display for absorbed count (only for movable blocks)
@@ -100,6 +143,51 @@ public class ClutterBlockStateController : GameObjectStateController
         {
             countText.text = level.ToString();
         }
+    }
+    
+    private float GetScaleForLevel(int lvl)
+    {
+        return lvl switch
+        {
+            1 => level1Scale,
+            2 => level2Scale,
+            3 => level3Scale,
+            _ => 1.0f
+        };
+    }
+    
+    public void AnimateToLevel(int newLevel)
+    {
+        if (visualModel == null || isImmovable) return;
+        
+        // Stop any existing scale animation
+        if (scaleCoroutine != null)
+        {
+            StopCoroutine(scaleCoroutine);
+        }
+        
+        scaleCoroutine = StartCoroutine(ScaleToLevelCoroutine(newLevel));
+    }
+    
+    private System.Collections.IEnumerator ScaleToLevelCoroutine(int targetLevel)
+    {
+        Vector3 startScale = visualModel.transform.localScale;
+        Vector3 targetScale = visualModelOriginalScale * GetScaleForLevel(targetLevel);
+        float elapsed = 0f;
+        
+        while (elapsed < scaleAnimationDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / scaleAnimationDuration;
+            // Ease out curve for smooth deceleration
+            float smoothT = 1f - Mathf.Pow(1f - t, 3f);
+            visualModel.transform.localScale = Vector3.Lerp(startScale, targetScale, smoothT);
+            yield return null;
+        }
+        
+        // Ensure we hit the exact target scale
+        visualModel.transform.localScale = targetScale;
+        scaleCoroutine = null;
     }
 
     public override void OnUpdate(float deltaTime)

@@ -19,6 +19,10 @@ public class GridManager : MonoBehaviour
     // Dictionary mapping Vector3Int positions to ClutterBlocks
     private Dictionary<Vector3Int, ClutterBlockStateController> grid = new Dictionary<Vector3Int, ClutterBlockStateController>();
     
+    // Anchor offset for the level (set by LevelLoader)
+    private static Vector3 anchorOffset = Vector3.zero;
+    public static Vector3 AnchorOffset { get { return anchorOffset; } set { anchorOffset = value; } }
+    
     void Awake()
     {
         if (instance == null)
@@ -44,16 +48,40 @@ public class GridManager : MonoBehaviour
     
     public static Vector3Int WorldToGrid(Vector3 worldPosition)
     {
-        return new Vector3Int(
-            Mathf.RoundToInt(worldPosition.x),
-            Mathf.RoundToInt(worldPosition.y),
-            Mathf.RoundToInt(worldPosition.z)
-        );
+        float gridSize = 1.0f;
+        
+        // Remove anchor offset first to get position relative to grid origin
+        Vector3 relativePos = worldPosition - anchorOffset;
+        
+        int gridX = Mathf.FloorToInt(relativePos.x / gridSize);
+        int gridY = Mathf.FloorToInt(relativePos.y / gridSize);
+        
+        // Handle negative Z: convert to positive row index
+        int gridZ;
+        if (relativePos.z < 0)
+        {
+            gridZ = Mathf.FloorToInt(-relativePos.z / gridSize);
+        }
+        else
+        {
+            gridZ = Mathf.FloorToInt(relativePos.z / gridSize);
+        }
+        
+        return new Vector3Int(gridX, gridY, gridZ);
     }
     
     public static Vector3 GridToWorld(Vector3Int gridPosition)
     {
-        return new Vector3(gridPosition.x, gridPosition.y, gridPosition.z);
+        float gridSize = 1.0f;
+        
+        // Convert grid to relative position, then add anchor offset
+        Vector3 relativePos = new Vector3(
+            (gridPosition.x + 0.5f) * gridSize,  // Center in grid cell
+            gridPosition.y, 
+            -(gridPosition.z + 0.5f) * gridSize  // Center in grid cell
+        );
+        
+        return relativePos + anchorOffset;
     }
     
     public void RegisterBlock(ClutterBlockStateController block)
@@ -92,7 +120,9 @@ public class GridManager : MonoBehaviour
     public ClutterBlockStateController GetBlockAt(Vector3 worldPosition)
     {
         Vector3Int gridPos = WorldToGrid(worldPosition);
-        return grid.ContainsKey(gridPos) ? grid[gridPos] : null;
+        ClutterBlockStateController block = grid.ContainsKey(gridPos) ? grid[gridPos] : null;
+        Debug.Log($"[GridManager] GetBlockAt world:{worldPosition} grid:{gridPos} -> {(block != null ? block.gameObject.name : "NULL")} (total blocks: {grid.Count})");
+        return block;
     }
     
     public bool IsPositionBlocked(Vector3 worldPosition)
@@ -105,6 +135,7 @@ public class GridManager : MonoBehaviour
         // Cannot push immovable blocks
         if (blockToPush.isImmovable)
         {
+            Debug.Log($"[GridManager] CanPushBlock: Block '{blockToPush.gameObject.name}' is immovable");
             return false;
         }
         
@@ -112,10 +143,13 @@ public class GridManager : MonoBehaviour
         
         if (targetBlock == null)
         {
+            Debug.Log($"[GridManager] CanPushBlock: Target position empty - can push");
             return true; // Empty space, can push
         }
         
         // Can only push into same type
-        return targetBlock.blockType == blockToPush.blockType;
+        bool canPush = targetBlock.blockType == blockToPush.blockType;
+        Debug.Log($"[GridManager] CanPushBlock: Target has block '{targetBlock.gameObject.name}' (type: {targetBlock.blockType}) vs pushing '{blockToPush.gameObject.name}' (type: {blockToPush.blockType}) -> {canPush}");
+        return canPush;
     }
 }

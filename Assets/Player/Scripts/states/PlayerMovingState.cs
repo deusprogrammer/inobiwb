@@ -3,80 +3,100 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "PlayerMovingState", menuName = "States/Player Moving State")]
 public class PlayerMovingState : HomeBoyState
 {
+    public float movementDuration = 0.15f; // Duration of movement between grid cells
+    private float elapsedTime = 0f;
+    private Vector3 startPosition;
+    private Vector3 targetPosition;
+    private Vector3Int targetGridPos;
+    private bool isMoving = false;
+    
     public override void OnEvent(string eventName, GameObjectStateController controller)
     {
         // Handle events for MovingState if needed
     }
 
-    public override void Tick(float deltaTime, GameObjectStateController controller)
+    public override void EnterState(GameObjectStateController controller)
     {
         HomeBoyStateController homeBoyController = (HomeBoyStateController)controller;
-        Vector2 moveInput = homeBoyController.MoveInput;
-
-        if (moveInput.sqrMagnitude == 0)
-        {
-            // No movement input, transition to Idle state
-            controller.ChangeState(HomeBoyStates.IDLE);
-            return;
-        }
         
-        // Lock movement to 4 cardinal directions (up, down, left, right)
-        Vector2 lockedInput;
-        if (Mathf.Abs(moveInput.x) > Mathf.Abs(moveInput.y))
+        // Calculate target grid position
+        Vector3Int currentGridPos = homeBoyController.GridPosition;
+        Vector3Int direction = homeBoyController.GridDirection;
+        targetGridPos = currentGridPos + direction;
+        
+        Debug.Log($"[Movement] Attempting to move from {currentGridPos} to {targetGridPos} (direction: {direction})");
+        
+        // Check if target position is blocked by a clutter block
+        Vector3 targetWorldPos = GridManager.GridToWorld(targetGridPos);
+        ClutterBlockStateController blockAtTarget = GridManager.Instance.GetBlockAt(targetWorldPos);
+        
+        if (blockAtTarget == null)
         {
-            // Horizontal movement dominates
-            lockedInput = new Vector2(Mathf.Sign(moveInput.x), 0);
+            // Target is empty, start movement
+            startPosition = homeBoyController.transform.position;
+            targetPosition = targetWorldPos;
+            targetPosition.y = homeBoyController.transform.position.y; // Keep Y position
+            
+            elapsedTime = 0f;
+            isMoving = true;
+            
+            // Update rotation to face movement direction
+            if (direction.x != 0 || direction.z != 0)
+            {
+                Vector3 lookDir = new Vector3(direction.x, 0, direction.z);
+                Quaternion targetRotation = Quaternion.LookRotation(lookDir);
+                homeBoyController.RigidBody.MoveRotation(targetRotation);
+            }
+            
+            Debug.Log($"[Movement] Starting smooth movement from {startPosition} to {targetPosition}");
         }
         else
         {
-            // Vertical movement dominates
-            lockedInput = new Vector2(0, Mathf.Sign(moveInput.y));
+            // Blocked, immediately transition back to idle
+            Debug.Log($"[Movement] Blocked by {blockAtTarget.gameObject.name} at {targetGridPos}");
+            controller.ChangeState(HomeBoyStates.IDLE);
         }
+    }
+    
+    public override void Tick(float deltaTime, GameObjectStateController controller)
+    {
+        HomeBoyStateController homeBoyController = (HomeBoyStateController)controller;
         
-        // Use world-space movement (not camera-relative) for strict grid alignment
-        Vector3 movement = new Vector3(lockedInput.x, 0, lockedInput.y);
-        
-        // Use Physics checks to prevent clipping through blocks
-        Vector3 currentPos = homeBoyController.RigidBody.position;
-        Vector3 desiredMovement = 5f * deltaTime * movement;
-        Vector3 targetPos = currentPos + desiredMovement;
-        
-        // Get player's collider size
-        BoxCollider playerCollider = homeBoyController.GetComponent<BoxCollider>();
-        Vector3 halfExtents = playerCollider.size * 0.5f * homeBoyController.transform.localScale.x;
-        Vector3 center = playerCollider.center;
-        
-        // Check if target position would overlap with anything
-        Collider[] overlaps = Physics.OverlapBox(
-            targetPos + center,
-            halfExtents * 0.95f, // Slightly smaller to avoid edge cases
-            Quaternion.identity,
-            ~0, // Check all layers
-            QueryTriggerInteraction.Ignore
-        );
-        
-        // Filter out self
-        bool wouldOverlap = false;
-        foreach (Collider col in overlaps)
+        if (!isMoving)
         {
-            if (col != playerCollider)
+            // No movement in progress, check input
+            Vector2 moveInput = homeBoyController.MoveInput;
+            if (moveInput.sqrMagnitude == 0)
             {
-                wouldOverlap = true;
-                break;
+                // No input, transition to Idle
+                controller.ChangeState(HomeBoyStates.IDLE);
             }
+            return;
         }
         
-        if (!wouldOverlap)
-        {
-            // Safe to move
-            homeBoyController.RigidBody.MovePosition(targetPos);
-        }
+        // Update elapsed time
+        elapsedTime += deltaTime;
         
-        // Apply rotation based on movement direction
-        if (movement.magnitude > 0.01f)
+        if (elapsedTime >= movementDuration)
         {
-            Quaternion targetRotation = Quaternion.LookRotation(movement);
-            homeBoyController.RigidBody.MoveRotation(targetRotation);
+            // Movement complete
+            homeBoyController.RigidBody.MovePosition(targetPosition);
+            homeBoyController.UpdateGridPosition(targetGridPos);
+            
+            Debug.Log($"[Movement] Completed movement to {targetGridPos}");
+            
+            // Transition back to idle
+            controller.ChangeState(HomeBoyStates.IDLE);
+        }
+        else
+        {
+            // Interpolate position
+            float t = elapsedTime / movementDuration;
+            // Use ease-out for smoother feel
+            t = 1f - (1f - t) * (1f - t);
+            
+            Vector3 newPosition = Vector3.Lerp(startPosition, targetPosition, t);
+            homeBoyController.RigidBody.MovePosition(newPosition);
         }
     }
     

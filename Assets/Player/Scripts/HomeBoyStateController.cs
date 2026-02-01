@@ -13,11 +13,12 @@ public class HomeBoyStateController : GameObjectStateController
     private Vector2 moveInput;
     public Vector2 MoveInput { get { return moveInput; } }
 
-    private int currentDirection = 0;
-    public int CurrentDirection { get { return currentDirection; } }
+    // Grid-based position and direction
+    private Vector3Int gridPosition;
+    public Vector3Int GridPosition { get { return gridPosition; } }
     
-    private Vector3 lastFacingDirection = Vector3.forward;
-    public Vector3 LastFacingDirection { get { return lastFacingDirection; } }
+    private Vector3Int gridDirection = new Vector3Int(0, 0, 1); // Start facing forward (positive Z)
+    public Vector3Int GridDirection { get { return gridDirection; } }
 
     private new Collider collider;
     public Collider Collider { get { return collider; } }
@@ -27,39 +28,96 @@ public class HomeBoyStateController : GameObjectStateController
     private ClutterBlockStateController targetedBlock = null;
     public ClutterBlockStateController TargetedBlock { get { return targetedBlock; } }
 
+    // Visual indicator for targeted grid cell
+    private GameObject targetIndicator;
+    private Vector3Int currentTargetGridPos;
+
     public new static HomeBoyStateController Instance { get; private set; }
 
     public override void OnStart()
     {
         collider = GetComponent<Collider>();
         rigidBody = GetComponent<Rigidbody>();
+        
+        // Initialize grid position from world position
+        gridPosition = GridManager.WorldToGrid(transform.position);
+        Debug.Log($"[Player] Starting at grid position: {gridPosition}");
+        
+        CreateTargetIndicator();
         ChangeState(HomeBoyStates.IDLE);
+    }
+    
+    void OnDestroy()
+    {
+        if (targetIndicator != null)
+        {
+            Destroy(targetIndicator);
+        }
+    }
+    
+    private void CreateTargetIndicator()
+    {
+        // Create a quad on the ground to show targeted grid cell
+        targetIndicator = GameObject.CreatePrimitive(PrimitiveType.Quad);
+        targetIndicator.name = "TargetIndicator";
+        
+        // Remove the collider so it doesn't interfere
+        Destroy(targetIndicator.GetComponent<Collider>());
+        
+        // Rotate to lie flat on the ground (pointing up)
+        targetIndicator.transform.rotation = Quaternion.Euler(90, 0, 0);
+        targetIndicator.transform.localScale = new Vector3(0.9f, 0.9f, 1f); // Slightly smaller than grid cell
+        
+        // Set material color (semi-transparent yellow)
+        Renderer renderer = targetIndicator.GetComponent<Renderer>();
+        if (renderer != null)
+        {
+            Material mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            mat.color = new Color(1f, 1f, 0f, 0.5f); // Yellow, semi-transparent
+            
+            // Enable transparency
+            mat.SetFloat("_Surface", 1); // Transparent
+            mat.SetFloat("_Blend", 0); // Alpha blend
+            mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            mat.SetInt("_ZWrite", 0);
+            mat.renderQueue = 3001;
+            
+            renderer.material = mat;
+        }
+        
+        // Start hidden
+        targetIndicator.SetActive(false);
     }
 
     public override void OnUpdate(float deltaTime)
     {
-        // Update last facing direction based on current rotation
-        lastFacingDirection = transform.forward;
-        
-        // Update targeted block
+        // Update targeted block based on grid position and direction
         UpdateTargetedBlock();
     }
     
     private void UpdateTargetedBlock()
     {
-        // Get player's grid position and facing direction
-        Vector3Int playerGridPos = GridManager.WorldToGrid(transform.position);
-        Vector3 forward = lastFacingDirection;
+        // Calculate target grid position (one space in current direction)
+        Vector3Int targetGridPos = gridPosition + gridDirection;
+        Vector3 targetWorldPos = GridManager.GridToWorld(targetGridPos);
         
-        // Calculate target grid position (one space in front)
-        Vector3Int targetGridPos = playerGridPos + new Vector3Int(
-            Mathf.RoundToInt(forward.x),
-            0,
-            Mathf.RoundToInt(forward.z)
-        );
+        Debug.Log($"[Targeting] Player at grid: {gridPosition}, facing direction: {gridDirection}, target grid: {targetGridPos}, target world: {targetWorldPos}");
+        
+        // Update visual indicator position (disabled)
+        currentTargetGridPos = targetGridPos;
+        /*
+        if (targetIndicator != null)
+        {
+            targetIndicator.SetActive(true);
+            // Position at ground level (y=0.01 to avoid z-fighting)
+            targetIndicator.transform.position = new Vector3(targetWorldPos.x, 0.01f, targetWorldPos.z);
+        }
+        */
         
         // Get block at target grid position
-        ClutterBlockStateController newTargetBlock = GridManager.Instance.GetBlockAt(GridManager.GridToWorld(targetGridPos));
+        ClutterBlockStateController newTargetBlock = GridManager.Instance.GetBlockAt(targetWorldPos);
+        Debug.Log($"[Targeting] Block at target: {(newTargetBlock != null ? newTargetBlock.gameObject.name : "NULL")}");
         
         // Update targeting
         if (targetedBlock != newTargetBlock)
@@ -79,6 +137,12 @@ public class HomeBoyStateController : GameObjectStateController
         }
     }
 
+    public void UpdateGridPosition(Vector3Int newGridPos)
+    {
+        gridPosition = newGridPos;
+        Debug.Log($"[Player] Moved to grid position: {gridPosition}");
+    }
+    
     public override void OnChangeState(string oldStateName, string newStateName)
     {
         
@@ -88,17 +152,21 @@ public class HomeBoyStateController : GameObjectStateController
     {
         moveInput = inputValue.Get<Vector2>();
 
-        if (moveInput.x < 0)
+        // Update grid direction based on input (lock to cardinal directions)
+        if (moveInput.sqrMagnitude > 0)
         {
-            currentDirection = -1;
-        }
-        else if (moveInput.x > 0)
-        {
-            currentDirection = 1;
-        }
-        else
-        {
-            currentDirection = 0;
+            if (Mathf.Abs(moveInput.x) > Mathf.Abs(moveInput.y))
+            {
+                // Horizontal movement (left/right)
+                gridDirection = new Vector3Int((int)Mathf.Sign(moveInput.x), 0, 0);
+            }
+            else
+            {
+                // Vertical movement (up/down)
+                // Input Y positive = up = negative Z (rows decrease)
+                // Input Y negative = down = positive Z (rows increase)
+                gridDirection = new Vector3Int(0, 0, -(int)Mathf.Sign(moveInput.y));
+            }
         }
 
         ((HomeBoyState)currentState)?.OnMove();
@@ -113,21 +181,13 @@ public class HomeBoyStateController : GameObjectStateController
     {
         if (GridManager.Instance == null) return;
         
-        // Draw player grid position and facing direction
+        // Draw player grid position
         Gizmos.color = Color.green;
-        Vector3Int gridPos = GridManager.WorldToGrid(transform.position);
-        Gizmos.DrawWireCube(GridManager.GridToWorld(gridPos), Vector3.one * 0.95f);
+        Gizmos.DrawWireCube(GridManager.GridToWorld(gridPosition), Vector3.one * 0.95f);
         
-        // Draw target grid position
-        if (lastFacingDirection.magnitude > 0.1f)
-        {
-            Vector3Int targetGridPos = gridPos + new Vector3Int(
-                Mathf.RoundToInt(lastFacingDirection.x),
-                0,
-                Mathf.RoundToInt(lastFacingDirection.z)
-            );
-            Gizmos.color = targetedBlock != null ? Color.yellow : Color.cyan;
-            Gizmos.DrawWireCube(GridManager.GridToWorld(targetGridPos), Vector3.one * 0.9f);
-        }
+        // Draw target grid position based on current direction
+        Vector3Int targetGridPos = gridPosition + gridDirection;
+        Gizmos.color = targetedBlock != null ? Color.yellow : Color.cyan;
+        Gizmos.DrawWireCube(GridManager.GridToWorld(targetGridPos), Vector3.one * 0.9f);
     }
 }

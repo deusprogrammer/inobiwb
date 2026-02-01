@@ -25,26 +25,31 @@ public class PlayerPushingState : HomeBoyState
         // Push the targeted block if there is one
         if (homeBoyController.TargetedBlock != null)
         {
-            Vector3 forward = homeBoyController.LastFacingDirection;
-            Vector2 pushDirection = new Vector2(forward.x, forward.z).normalized;
+            Vector3Int direction = homeBoyController.GridDirection;
+            // Invert Z for push direction to match world space
+            Vector2 pushDirection = new Vector2(direction.x, -direction.z);
             
             // Check if push is valid (target position empty or same type)
             Vector3 blockPosition = homeBoyController.TargetedBlock.transform.position;
-            Vector3 targetPosition = blockPosition + new Vector3(pushDirection.x, 0, pushDirection.y) * 1.0f;
+            Vector3Int blockGridPos = GridManager.WorldToGrid(blockPosition);
+            Vector3Int targetGridPos = blockGridPos + direction;
+            Vector3 targetPosition = GridManager.GridToWorld(targetGridPos);
+            
+            Debug.Log($"[Push] Attempting to push block '{homeBoyController.TargetedBlock.gameObject.name}' from grid {blockGridPos} to {targetGridPos} (world: {targetPosition}), direction: {direction}");
             
             if (CanPushToPosition(homeBoyController.TargetedBlock, targetPosition))
             {
-                Debug.Log($"Pushing targeted block {homeBoyController.TargetedBlock.gameObject.name} in direction {pushDirection}");
+                Debug.Log($"[Push] Push allowed! Executing push...");
                 homeBoyController.TargetedBlock.Push(pushDirection);
             }
             else
             {
-                Debug.Log("Cannot push - target position blocked by dissimilar block type");
+                Debug.Log($"[Push] Cannot push - target position blocked or immovable");
             }
         }
         else
         {
-            Debug.Log("No targeted block to push");
+            Debug.Log("[Push] No targeted block to push");
         }
     }
     

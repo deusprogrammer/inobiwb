@@ -168,29 +168,51 @@ public class LevelLoaderEditor : Editor
                 controller.level = codeValue - 6;
             }
             
-            // Set color manually since OnStart won't run in edit mode
-            Renderer renderer = block.GetComponent<Renderer>();
-            if (renderer != null)
+            // Manually instantiate visual model since OnStart won't run in edit mode
+            GameObject modelPrefab = null;
+            
+            if (immovable)
             {
-                if (immovable)
+                modelPrefab = controller.chairModelPrefab;
+            }
+            else
+            {
+                modelPrefab = controller.blockType switch
                 {
-                    renderer.sharedMaterial.color = Color.yellow;
-                }
-                else
+                    ClutterBlockType.Trash => controller.trashModelPrefab,
+                    ClutterBlockType.Laundry => controller.laundryModelPrefab,
+                    ClutterBlockType.Dishes => controller.dishesModelPrefab,
+                    _ => null
+                };
+            }
+            
+            if (modelPrefab != null)
+            {
+                GameObject visual = (GameObject)PrefabUtility.InstantiatePrefab(modelPrefab);
+                visual.transform.SetParent(block.transform);
+                
+                // Get the parent scale (objectScale)
+                float parentScale = block.transform.localScale.x;
+                
+                // Store prefab rotation (already preserved from Instantiate)
+                Quaternion prefabRotation = visual.transform.localRotation;
+                
+                // Position: assuming pivot is at bottom, offset down by -height/2 to sit on ground
+                float localY = -parentScale * 0.5f;
+                visual.transform.localPosition = new Vector3(0, localY, 0);
+                visual.transform.localRotation = prefabRotation;
+                
+                // Get level scale from controller
+                float levelScale = controller.level switch
                 {
-                    switch (controller.blockType)
-                    {
-                        case ClutterBlockType.Trash:
-                            renderer.sharedMaterial.color = Color.black;
-                            break;
-                        case ClutterBlockType.Laundry:
-                            renderer.sharedMaterial.color = new Color(0.5f, 0.8f, 1.0f);
-                            break;
-                        case ClutterBlockType.Dishes:
-                            renderer.sharedMaterial.color = Color.white;
-                            break;
-                    }
-                }
+                    1 => controller.level1Scale,
+                    2 => controller.level2Scale,
+                    3 => controller.level3Scale,
+                    _ => 1.0f
+                };
+                
+                visual.transform.localScale = visual.transform.localScale * levelScale;
+                Undo.RegisterCreatedObjectUndo(visual, "Preview Visual Model");
             }
         }
         
