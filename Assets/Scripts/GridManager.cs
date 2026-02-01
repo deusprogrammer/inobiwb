@@ -110,6 +110,55 @@ public class GridManager : MonoBehaviour
         {
             grid.Remove(gridPos);
             Debug.Log($"Unregistered block at grid position {gridPos}");
+            
+            // Check for level completion after block is removed
+            CheckLevelCompletion();
+        }
+    }
+    
+    private void CheckLevelCompletion()
+    {
+        // Count blocks by type (excluding immovable furniture)
+        Dictionary<ClutterBlockType, int> blockCounts = new Dictionary<ClutterBlockType, int>
+        {
+            { ClutterBlockType.Trash, 0 },
+            { ClutterBlockType.Dishes, 0 },
+            { ClutterBlockType.Laundry, 0 }
+        };
+        
+        foreach (var kvp in grid)
+        {
+            ClutterBlockStateController block = kvp.Value;
+            if (!block.isImmovable)
+            {
+                blockCounts[block.blockType]++;
+            }
+        }
+        
+        int totalBlocks = blockCounts[ClutterBlockType.Trash] + 
+                         blockCounts[ClutterBlockType.Dishes] + 
+                         blockCounts[ClutterBlockType.Laundry];
+        
+        if (totalBlocks == 0)
+        {
+            // Perfect! All blocks cleared
+            Debug.Log("[GridManager] Level Complete - Perfect!");
+            EventBus.Instance.Publish(new GameEvent(EventNames.LevelEndPerfect));
+        }
+        else
+        {
+            // Check if any combinations are still possible
+            // A combination is possible if any block type has 2+ blocks
+            bool combinationsPossible = blockCounts[ClutterBlockType.Trash] >= 2 ||
+                                       blockCounts[ClutterBlockType.Dishes] >= 2 ||
+                                       blockCounts[ClutterBlockType.Laundry] >= 2;
+            
+            if (!combinationsPossible)
+            {
+                // Level end - no more moves
+                Debug.Log($"[GridManager] Level Complete - No more combinations possible. Remaining: Trash={blockCounts[ClutterBlockType.Trash]}, Dishes={blockCounts[ClutterBlockType.Dishes]}, Laundry={blockCounts[ClutterBlockType.Laundry]}");
+                EventBus.Instance.Publish(new GameEvent(EventNames.LevelEnd));
+            }
         }
     }
     

@@ -1,0 +1,162 @@
+{
+  "triggers": [
+    {
+      "id": "tutorial_level_start",
+      "eventName": "levelStart",
+      "freezeControls": true,
+      "maxCount": 1,
+      "dialogue": [
+        {
+          "speaker": "Narrator",
+          "expression": "neutral",
+          "text": "Who wants hotdogs?"
+        }
+      ]
+    },
+    {
+      "id": "wrong_block_pushed_generic",
+      "eventName": "wrongBlockPushed",
+      "freezeControls": false,
+      "maxCount": 3,
+      "dialogue": [
+        {
+          "speaker": "Player",
+          "expression": "confused",
+          "text": "I shouldn't be pushing that..."
+        }
+      ]
+    },
+    {
+      "id": "homer_bad_combo_first",
+      "eventName": "blocksCombineFailed",
+      "actor": "homer",
+      "freezeControls": false,
+      "maxCount": 1,
+      "setFlags": ["homer_tried_bad_combo"],
+      "dialogue": [
+        {
+          "speaker": "Homer",
+          "expression": "frustrated",
+          "text": "Ugh, that didn't work. Can't mix different types."
+        }
+      ]
+    },
+    {
+      "id": "casa_mocks_homer_bad_combo",
+      "eventName": "blocksCombineFailed",
+      "actor": "casa",
+      "condition": {
+        "homer_tried_bad_combo": true
+      },
+      "freezeControls": false,
+      "maxCount": 1,
+      "dialogue": [
+        {
+          "speaker": "Casa",
+          "expression": "smirking",
+          "text": "Hey genius, I already tried that."
+        }
+      ]
+    },
+    {
+      "id": "casa_bad_combo_first",
+      "eventName": "blocksCombineFailed",
+      "actor": "casa",
+      "freezeControls": false,
+      "maxCount": 1,
+      "setFlags": ["casa_tried_bad_combo"],
+      "dialogue": [
+        {
+          "speaker": "Casa",
+          "expression": "annoyed",
+          "text": "Great... these don't go together either."
+        }
+      ]
+    },
+    {
+      "id": "homer_mocks_casa_bad_combo",
+      "eventName": "blocksCombineFailed",
+      "actor": "homer",
+      "condition": {
+        "casa_tried_bad_combo": true
+      },
+      "freezeControls": false,
+      "maxCount": 1,
+      "dialogue": [
+        {
+          "speaker": "Homer",
+          "expression": "teasing",
+          "text": "You're cute... but kinda dumb."
+        }
+      ]
+    },
+    {
+      "id": "casa_good_combo",
+      "eventName": "blocksCombined",
+      "actor": "casa",
+      "freezeControls": false,
+      "maxCount": 3,
+      "dialogue": [
+        {
+          "speaker": "Casa",
+          "expression": "satisfied",
+          "text": "Nice! They combined!"
+        }
+      ]
+    },
+    {
+      "id": "level_end_not_perfect",
+      "eventName": "levelEnd",
+      "freezeControls": true,
+      "maxCount": 1,
+      "dialogue": [
+        {
+          "speaker": "Casa",
+          "expression": "disappointed",
+          "text": "Well we tried..."
+        }
+      ]
+    },
+    {
+      "id": "level_end_perfect",
+      "eventName": "levelEndPerfect",
+      "freezeControls": true,
+      "maxCount": 1,
+      "dialogue": [
+        {
+          "speaker": "Casa",
+          "expression": "excited",
+          "text": "Wow... we did it!"
+        }
+      ]
+    },
+    {
+      "id": "furniture_cant_move",
+      "eventName": "furnitureMoveFailure",
+      "freezeControls": false,
+      "maxCount": 2,
+      "dialogue": [
+        {
+          "speaker": "Player",
+          "expression": "confused",
+          "text": "This won't budge..."
+        }
+      ]
+    },
+    {
+      "id": "item_collected_first",
+      "eventName": "itemCollected",
+      "target": "itemChair",
+      "freezeControls": true,
+      "maxCount": 1,
+      "setFlags": ["foundItem"],
+      "dialogue": [
+        {
+          "speaker": "Casa",
+          "expression": "surprised",
+          "text": "Oh! What's this?"
+        }
+      ]
+    }
+  ]
+}

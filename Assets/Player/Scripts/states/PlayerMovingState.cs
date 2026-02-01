@@ -3,8 +3,6 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "PlayerMovingState", menuName = "States/Player Moving State")]
 public class PlayerMovingState : HomeBoyState
 {
-    public float movementDuration = 0.15f; // Duration of movement between grid cells
-    private float elapsedTime = 0f;
     private Vector3 startPosition;
     private Vector3 targetPosition;
     private Vector3Int targetGridPos;
@@ -13,6 +11,13 @@ public class PlayerMovingState : HomeBoyState
     public override void OnEvent(string eventName, GameObjectStateController controller)
     {
         // Handle events for MovingState if needed
+    }
+
+    public override void OnPush()
+    {
+        // Block push input while moving - no state transition
+        Debug.Log("[PlayerMovingState] Push blocked - cannot push while moving");
+        // Do nothing - stay in MOVING state
     }
 
     public override void EnterState(GameObjectStateController controller)
@@ -45,7 +50,6 @@ public class PlayerMovingState : HomeBoyState
             targetPosition = targetWorldPos;
             targetPosition.y = homeBoyController.transform.position.y; // Keep Y position
             
-            elapsedTime = 0f;
             isMoving = true;
             
             // Update rotation to face movement direction
@@ -82,12 +86,12 @@ public class PlayerMovingState : HomeBoyState
             return;
         }
         
-        // Update elapsed time
-        elapsedTime += deltaTime;
+        // Use base class elapsedTime (managed automatically)
+        float progress = this.elapsed / duration;
         
-        if (elapsedTime >= movementDuration)
+        if (progress >= 1f)
         {
-            // Movement complete
+            // Movement complete - snap to target
             homeBoyController.RigidBody.MovePosition(targetPosition);
             homeBoyController.UpdateGridPosition(targetGridPos);
             
@@ -98,10 +102,8 @@ public class PlayerMovingState : HomeBoyState
         }
         else
         {
-            // Interpolate position
-            float t = elapsedTime / movementDuration;
-            // Use ease-out for smoother feel
-            t = 1f - (1f - t) * (1f - t);
+            // Interpolate position using ease-out
+            float t = 1f - (1f - progress) * (1f - progress);
             
             Vector3 newPosition = Vector3.Lerp(startPosition, targetPosition, t);
             homeBoyController.RigidBody.MovePosition(newPosition);
@@ -113,10 +115,5 @@ public class PlayerMovingState : HomeBoyState
         Debug.Log($"[PlayerMovingState] OnMove called - already moving, updating direction");
         // Update movement direction
         // Movement applied in Tick()
-    }
-
-    public override void OnPush()
-    {
-        this.stateManager.ChangeState(HomeBoyStates.PUSHING);
     }
 }

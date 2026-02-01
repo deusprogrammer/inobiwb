@@ -64,6 +64,12 @@ public class PlayerInputManager : MonoBehaviour
             return;
         }
         
+        // Block input if dialogue has frozen controls
+        if (DialogueManager.Instance != null && DialogueManager.Instance.AreControlsFrozen())
+        {
+            return;
+        }
+        
         Debug.Log($"[PlayerInputManager] OnMove called, activePlayer: {(activePlayer != null ? activePlayer.gameObject.name : "NULL")}, inputValue: {inputValue.Get<Vector2>()}");
         
         if (activePlayer != null)
@@ -95,6 +101,12 @@ public class PlayerInputManager : MonoBehaviour
     void OnLook(InputValue inputValue)
     {
         if (!isActive) return;
+        
+        // Block input if dialogue has frozen controls
+        if (DialogueManager.Instance != null && DialogueManager.Instance.AreControlsFrozen())
+        {
+            return;
+        }
         
         Debug.Log($"[PlayerInputManager] OnLook called, activePlayer: {(activePlayer != null ? activePlayer.gameObject.name : "NULL")}, inputValue: {inputValue.Get<Vector2>()}");
         

@@ -16,6 +16,7 @@ public class ClutterBlockStateController : GameObjectStateController
     public ClutterBlockType blockType = ClutterBlockType.Trash;
     public int level = 1;
     public bool isImmovable = false; // For furniture like chairs that cannot be pushed
+    public string furnitureType = ""; // Type of furniture (e.g., "chair", "itemChair")
     
     [Header("Visual Models")]
     public GameObject trashModelPrefab;
@@ -34,6 +35,9 @@ public class ClutterBlockStateController : GameObjectStateController
     
     public Vector2 movementDirection;
     public float movementAmount;
+    
+    [HideInInspector]
+    public string lastPusher; // Track which player pushed this block
     
     private bool isTargeted = false;
     private Color originalColor = Color.white;
@@ -58,7 +62,7 @@ public class ClutterBlockStateController : GameObjectStateController
         // Instantiate visual model based on block type
         GameObject modelPrefab = null;
         
-        if (isImmovable)
+        if (isImmovable || !string.IsNullOrEmpty(furnitureType))
         {
             modelPrefab = chairModelPrefab;
         }
@@ -200,10 +204,11 @@ public class ClutterBlockStateController : GameObjectStateController
         
     }
 
-    public void Push(Vector2 direction)
+    public void Push(Vector2 direction, string actor = null)
     {
         movementDirection = direction;
-        Debug.Log($"[Block {blockID}] Push called - Position: {transform.position}, Direction: {direction}, Current State: {currentState?.GetType().Name}");
+        lastPusher = actor;
+        Debug.Log($"[Block {blockID}] Push called - Position: {transform.position}, Direction: {direction}, Actor: {actor}, Current State: {currentState?.GetType().Name}");
         ((ClutterBlockState)currentState)?.OnEvent("push", this);
     }
     

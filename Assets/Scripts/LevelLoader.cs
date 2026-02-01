@@ -159,6 +159,25 @@ public class LevelLoader : MonoBehaviour
                     // Immovable furniture (chair)
                     SpawnClutterBlock(position, '1', true); // Use level 1 trash model for now
                 }
+                else if (cell == '!')
+                {
+                    // Item furniture (special colored chair that can be pushed)
+                    GameObject itemChair = SpawnClutterBlock(position, '!', false);
+                    if (itemChair != null)
+                    {
+                        ClutterBlockStateController chairController = itemChair.GetComponent<ClutterBlockStateController>();
+                        if (chairController != null)
+                        {
+                            chairController.furnitureType = "itemChair";
+                            // Change color to indicate it's special
+                            Renderer renderer = itemChair.GetComponentInChildren<Renderer>();
+                            if (renderer != null)
+                            {
+                                renderer.material.color = Color.yellow; // Make it stand out
+                            }
+                        }
+                    }
+                }
             }
         }
         
@@ -188,12 +207,10 @@ public class LevelLoader : MonoBehaviour
         // Create boundary walls around the level
         CreateBoundaryWalls(maxRows, maxCols, totalOffset);
         
-        // Show level start dialogue
-        DialogueBoxController dialogueBox = FindFirstObjectByType<DialogueBoxController>();
-        if (dialogueBox != null)
-        {
-            dialogueBox.Show("Level Start!");
-        }
+        // Publish level start event
+        EventBus.Instance.Publish(new GameEvent(EventNames.LevelStart));
+        
+        // Removed test dialogue - DialogueManager now handles this via triggers
     }
     
     void CreateGroundPlane(int rows, int cols, Vector3 offset)
@@ -288,12 +305,12 @@ public class LevelLoader : MonoBehaviour
         Debug.Log($"Grid cells drawn: {rows}x{cols} = {rows * cols} cells");
     }
     
-    void SpawnClutterBlock(Vector3 position, char code, bool immovable = false)
+    GameObject SpawnClutterBlock(Vector3 position, char code, bool immovable = false)
     {
         if (clutterBlockPrefab == null)
         {
             Debug.LogError("ClutterBlock prefab not assigned!");
-            return;
+            return null;
         }
         
         // Position at half the scaled height so bottom sits on ground
@@ -319,8 +336,11 @@ public class LevelLoader : MonoBehaviour
             // Set immovable flag
             controller.isImmovable = immovable;
             
-            // Decode the character to type and level
-            int codeValue = code - '0'; // Convert char to int (1-9)
+            // Special case: '!' is item furniture, don't set blockType
+            if (code != '!')
+            {
+                // Decode the character to type and level
+                int codeValue = code - '0'; // Convert char to int (1-9)
             
             if (codeValue >= 1 && codeValue <= 3)
             {
@@ -340,10 +360,13 @@ public class LevelLoader : MonoBehaviour
                 controller.blockType = ClutterBlockType.Dishes;
                 controller.level = codeValue - 6; // 7->1, 8->2, 9->3
             }
+            }
         }
         
         // Register block with GridManager
         GridManager.Instance.RegisterBlock(controller);
+        
+        return block;
     }
     
     void CreateBoundaryWalls(int rows, int cols, Vector3 offset)

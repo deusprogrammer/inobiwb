@@ -1,0 +1,152 @@
+{
+  "triggers": [
+
+    {
+      "id": "tutorial_level_start",
+      "eventName": "levelStart",
+      "freezeControls": true,
+      "maxCount": 1,
+      "dialogue": [
+        {
+          "speaker": "Casa",
+          "expression": "gentle_smile",
+          "text": "Okay. So. Before you panic—this isn’t hard."
+        },
+        {
+          "speaker": "Casa",
+          "expression": "thinking",
+          "text": "You just push things. If three of the same kind touch, they combine."
+        },
+        {
+          "speaker": "Casa",
+          "expression": "matter_of_fact",
+          "text": "When they level up enough… they disappear. Cleaned."
+        },
+        {
+          "speaker": "Casa",
+          "expression": "small_shrug",
+          "text": "No timers. No pressure. Just… physics. Emotional physics."
+        }
+      ]
+    },
+
+    {
+      "id": "tutorial_strategy_warning",
+      "eventName": "blockPushed",
+      "freezeControls": false,
+      "maxCount": 1,
+      "dialogue": [
+        {
+          "speaker": "Casa",
+          "expression": "pointing",
+          "text": "One thing though—try not to leave little leftovers."
+        },
+        {
+          "speaker": "Casa",
+          "expression": "wry_smile",
+          "text": "Stragglers pile up. That’s usually how things get messy again."
+        }
+      ]
+    },
+
+    {
+      "id": "homer_pushes_laundry",
+      "eventName": "wrongBlockPushed",
+      "actor": "homer",
+      "target": "laundry",
+      "freezeControls": true,
+      "maxCount": 1,
+      "dialogue": [
+        {
+          "speaker": "Casa",
+          "expression": "embarrassed",
+          "text": "Ah—wait! Please don’t touch that."
+        },
+        {
+          "speaker": "Casa",
+          "expression": "looking_away",
+          "text": "I know it’s dumb. I just… don’t want anyone else seeing my unmentionables."
+        }
+      ]
+    },
+
+    {
+      "id": "casa_pushes_dishes",
+      "eventName": "wrongBlockPushed",
+      "actor": "casa",
+      "target": "dishes",
+      "freezeControls": true,
+      "maxCount": 1,
+      "dialogue": [
+        {
+          "speaker": "Casa",
+          "expression": "uneasy",
+          "text": "Could you do the dishes?"
+        },
+        {
+          "speaker": "Casa",
+          "expression": "hands_trembling",
+          "text": "I’ve been… kind of shaky lately. I don’t trust myself not to drop them."
+        }
+      ]
+    },
+
+    {
+      "id": "first_block_cleared",
+      "eventName": "blockCleared",
+      "freezeControls": false,
+      "maxCount": 1,
+      "dialogue": [
+        {
+          "speaker": "Casa",
+          "expression": "surprised",
+          "text": "Oh."
+        },
+        {
+          "speaker": "Casa",
+          "expression": "soft_relief",
+          "text": "Yeah. That actually helps."
+        }
+      ]
+    },
+
+    {
+      "id": "tutorial_level_end_perfect",
+      "eventName": "levelEndPerfect",
+      "freezeControls": true,
+      "maxCount": 1,
+      "dialogue": [
+        {
+          "speaker": "Casa",
+          "expression": "genuine_smile",
+          "text": "You didn’t leave anything behind."
+        },
+        {
+          "speaker": "Casa",
+          "expression": "quiet_pride",
+          "text": "See? It’s not about doing everything. Just… doing enough."
+        }
+      ]
+    },
+
+    {
+      "id": "tutorial_level_end_normal",
+      "eventName": "levelEnd",
+      "freezeControls": true,
+      "maxCount": 1,
+      "dialogue": [
+        {
+          "speaker": "Casa",
+          "expression": "deadpan",
+          "text": "…How did you manage to leave stragglers in the tutorial?"
+        },
+        {
+          "speaker": "Casa",
+          "expression": "teasing_smile",
+          "text": "I mean. Impressive. Truly."
+        }
+      ]
+    }
+
+  ]
+}

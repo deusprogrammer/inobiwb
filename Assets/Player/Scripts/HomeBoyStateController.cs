@@ -10,6 +10,10 @@ public class HomeBoyStates
 
 public class HomeBoyStateController : GameObjectStateController
 {
+    [Header("Identity")]
+    [Tooltip("Actor name for event system (e.g., 'homeBoy', 'homeGirl')")]
+    public string actorLabel = "homeBoy";
+    
     [Header("Partner System")]
     public HomeBoyStateController partnerController;
     public bool isActive = true;
@@ -200,10 +204,13 @@ public class HomeBoyStateController : GameObjectStateController
         Debug.Log($"[{gameObject.name}] HandleMove processing input: {moveInput}, currentState: {CurrentStateName}");
 
         // Hide dialogue box when player starts moving
+        // COMMENTED OUT: DialogueManager now handles this
+        /*
         if (moveInput.sqrMagnitude > 0 && DialogueBoxController.Instance != null)
         {
             DialogueBoxController.Instance.Hide();
         }
+        */
 
         // Update grid direction based on input (lock to cardinal directions)
         if (moveInput.sqrMagnitude > 0)
@@ -232,6 +239,14 @@ public class HomeBoyStateController : GameObjectStateController
         if (!isActive)
         {
             Debug.Log($"[{gameObject.name}] HandlePush BLOCKED - not active");
+            return;
+        }
+        
+        // Check if dialogue manager has frozen controls
+        if (DialogueManager.Instance != null && DialogueManager.Instance.AreControlsFrozen())
+        {
+            Debug.Log($"[{gameObject.name}] HandlePush advancing dialogue");
+            DialogueManager.Instance.AdvanceDialogue();
             return;
         }
         

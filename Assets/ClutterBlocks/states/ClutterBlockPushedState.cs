@@ -62,12 +62,20 @@ public class ClutterBlockPushedState : ClutterBlockState
                 blockController.AnimateToLevel(blockController.level);
                 blockController.UpdateCountText();
                 
+                // Publish combination event
+                string blockType = blockController.blockType.ToString().ToLower();
+                EventBus.Instance.Publish(new GameEvent(EventNames.BlocksCombined, blockController.lastPusher, blockType));
+                
                 Object.Destroy(otherBlock.gameObject);
             }
             
             // Check if this block should be destroyed (after absorption)
             if (blockController.level >= 4)
             {
+                // Publish block cleared event
+                string blockType = blockController.blockType.ToString().ToLower();
+                EventBus.Instance.Publish(new GameEvent(EventNames.BlockCleared, blockController.lastPusher, blockType));
+                
                 // Transition to fading state
                 controller.ChangeState(ClutterBlockStates.FADING);
                 return;

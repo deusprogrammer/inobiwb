@@ -131,8 +131,9 @@ GameObject:
   - component: {fileID: 265407619}
   - component: {fileID: 265407618}
   - component: {fileID: 265407617}
+  - component: {fileID: 265407620}
   m_Layer: 5
-  m_Name: Text Canvas
+  m_Name: Dialogue Box
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -153,7 +154,7 @@ RectTransform:
   - {fileID: 1828661655}
   - {fileID: 1587241820}
   - {fileID: 1129661925}
-  m_Father: {fileID: 1520905540}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -223,6 +224,19 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
+--- !u!114 &265407620
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 265407615}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce37448e1786dae4a8c22b67c3cf8f65, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  triggersJson: {fileID: 4900000, guid: 705792c1fc9191c40aafff2701223fc6, type: 3}
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0
@@ -595,6 +609,7 @@ GameObject:
   - component: {fileID: 680188486}
   - component: {fileID: 680188488}
   - component: {fileID: 680188487}
+  - component: {fileID: 680188489}
   m_Layer: 0
   m_Name: Game Controller
   m_TagString: Untagged
@@ -697,9 +712,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da0e8c2d0f173434e9521e5cf419abee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  dialogueCanvas: {fileID: 265407619}
   dialogueText: {fileID: 1587241821}
+  continuePromptText: {fileID: 0}
   portraitContainer: {fileID: 1129661925}
-  billboard: 1
+  autoHideDuration: 3
+--- !u!114 &680188489
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 680188483}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 47cf0ff8b6364ae4ea067aac78b9530f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eventFilter: []
 --- !u!1 &810705191
 GameObject:
   m_ObjectHideFlags: 0
@@ -944,38 +974,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1129661924}
   m_CullTransparentMesh: 1
---- !u!1 &1520905539
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1520905540}
-  m_Layer: 0
-  m_Name: Dialogue Box
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1520905540
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1520905539}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -7.657118, y: 711.4304, z: -809.7866}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 265407616}
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1587241819
 GameObject:
   m_ObjectHideFlags: 0
@@ -1233,8 +1231,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -243.06}
-  m_SizeDelta: {x: 1500, y: 230}
+  m_AnchoredPosition: {x: 0.0050049, y: -243.06}
+  m_SizeDelta: {x: 1469, y: 230}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1828661656
 MonoBehaviour:
@@ -1344,6 +1342,6 @@ SceneRoots:
   - {fileID: 410087041}
   - {fileID: 832575519}
   - {fileID: 680188485}
-  - {fileID: 1520905540}
-  - {fileID: 411845163}
+  - {fileID: 265407616}
   - {fileID: 1098097854}
+  - {fileID: 411845163}

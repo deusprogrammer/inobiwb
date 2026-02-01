@@ -191,7 +191,7 @@ MonoBehaviour:
     animation: {fileID: 0}
     gameObjectState: {fileID: 11400000, guid: 6a09aef1f576cec4ea329ab22b9e1595, type: 2}
     physicsMaterial: {fileID: 0}
-    duration: 0
+    duration: 0.15
     cooldown: 0
   - name: Pushing
     animation: {fileID: 0}
@@ -199,6 +199,7 @@ MonoBehaviour:
     physicsMaterial: {fileID: 0}
     duration: 0.25
     cooldown: 0
+  actorLabel: homer
   partnerController: {fileID: 0}
   isActive: 1
   allowedPushTypes: 0000000001000000

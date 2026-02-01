@@ -27,32 +27,79 @@ public class PlayerPushingState : HomeBoyState
         // Push the targeted block if there is one
         if (homeBoyController.TargetedBlock != null)
         {
+            ClutterBlockStateController block = homeBoyController.TargetedBlock;
             Vector3Int direction = homeBoyController.GridDirection;
             // Invert Z for push direction to match world space
             Vector2 pushDirection = new Vector2(direction.x, -direction.z);
             
             // Check if push is valid (target position empty or same type)
-            Vector3 blockPosition = homeBoyController.TargetedBlock.transform.position;
+            Vector3 blockPosition = block.transform.position;
             Vector3Int blockGridPos = GridManager.WorldToGrid(blockPosition);
             Vector3Int targetGridPos = blockGridPos + direction;
             Vector3 targetPosition = GridManager.GridToWorld(targetGridPos);
             
-            Debug.Log($"[Push] Attempting to push block '{homeBoyController.TargetedBlock.gameObject.name}' from grid {blockGridPos} to {targetGridPos} (world: {targetPosition}), direction: {direction}");
+            Debug.Log($"[Push] Attempting to push block '{block.gameObject.name}' from grid {blockGridPos} to {targetGridPos} (world: {targetPosition}), direction: {direction}");
             
-            if (CanPushToPosition(homeBoyController, homeBoyController.TargetedBlock, targetPosition))
+            string blockTypeTarget = block.blockType.ToString().ToLower();
+            string actor = homeBoyController.actorLabel;
+            
+            // Check for immovable furniture
+            if (block.isImmovable)
+            {
+                Debug.Log($"[Push] Cannot push - immovable furniture");
+                string furnitureTarget = string.IsNullOrEmpty(block.furnitureType) ? "furniture" : block.furnitureType;
+                EventBus.Instance.Publish(new GameEvent(EventNames.FurnitureMoveFailure, actor, furnitureTarget));
+            }
+            // Check if it's a special furniture type that gives an item
+            else if (!string.IsNullOrEmpty(block.furnitureType))
+            {
+                Debug.Log($"[Push] Special furniture - item collected!");
+                block.Push(pushDirection, actor);
+                EventBus.Instance.Publish(new GameEvent(EventNames.ItemCollected, actor, block.furnitureType));
+            }
+            // Check if player is allowed to push this type
+            else if (!IsBlockTypeAllowed(homeBoyController, block))
+            {
+                Debug.Log($"[Push] Cannot push - type not allowed by player");
+                EventBus.Instance.Publish(new GameEvent(EventNames.WrongBlockPushed, actor, blockTypeTarget));
+            }
+            else if (CanPushToPosition(homeBoyController, block, targetPosition))
             {
                 Debug.Log($"[Push] Push allowed! Executing push...");
-                homeBoyController.TargetedBlock.Push(pushDirection);
+                block.Push(pushDirection, actor);
+                EventBus.Instance.Publish(new GameEvent(EventNames.BlockPushed, actor, blockTypeTarget));
             }
             else
             {
-                Debug.Log($"[Push] Cannot push - target position blocked, immovable, or type not allowed");
+                // Push blocked by different block type at target
+                ClutterBlockStateController targetBlock = GridManager.Instance.GetBlockAt(targetPosition);
+                if (targetBlock != null && targetBlock.blockType != block.blockType)
+                {
+                    Debug.Log($"[Push] Cannot push - different block type at target");
+                    EventBus.Instance.Publish(new GameEvent(EventNames.BlocksCombineFailed, actor, blockTypeTarget));
+                }
+                else
+                {
+                    Debug.Log($"[Push] Cannot push - unknown reason");
+                }
             }
         }
         else
         {
             Debug.Log("[Push] No targeted block to push");
         }
+    }
+    
+    private bool IsBlockTypeAllowed(HomeBoyStateController player, ClutterBlockStateController block)
+    {
+        foreach (ClutterBlockType allowedType in player.AllowedPushTypes)
+        {
+            if (block.blockType == allowedType)
+            {
+                return true;
+            }
+        }
+        return false;
     }
     
     private bool CanPushToPosition(HomeBoyStateController player, ClutterBlockStateController blockToPush, Vector3 targetPosition)
