@@ -702,7 +702,7 @@ MonoBehaviour:
   dialogueCanvas: {fileID: 265407619}
   dialogueText: {fileID: 1587241821}
   continuePromptText: {fileID: 0}
-  portraitContainer: {fileID: 1129661925}
+  portraitImage: {fileID: 1129661926}
   autoHideDuration: 3
 --- !u!114 &680188489
 MonoBehaviour:
@@ -730,6 +730,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   triggersJson: {fileID: 4900000, guid: c0147598f85efb44bb3b821069e96c78, type: 3}
+  characterPortraits:
+  - {fileID: 11400000, guid: ce36f3487cddc63409e8e99a2c92bdbe, type: 2}
+  - {fileID: 11400000, guid: f4659c86a606fdb4fbd29e90a64e0f29, type: 2}
 --- !u!1 &810705191
 GameObject:
   m_ObjectHideFlags: 0

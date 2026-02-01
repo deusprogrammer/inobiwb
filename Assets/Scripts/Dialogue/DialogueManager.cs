@@ -13,6 +13,10 @@ public class DialogueManager : MonoBehaviour
     [Header("Trigger Configuration")]
     [SerializeField] private TextAsset triggersJson;
     
+    [Header("Character Portraits")]
+    [SerializeField] private List<CharacterPortrait> characterPortraits = new List<CharacterPortrait>();
+    
+    private Dictionary<string, CharacterPortrait> portraitLookup = new Dictionary<string, CharacterPortrait>();
     private DialogueTriggerData triggerData;
     private Dictionary<string, bool> gameFlags = new Dictionary<string, bool>();
     private Queue<DialogueLine> dialogueQueue = new Queue<DialogueLine>();
@@ -33,7 +37,35 @@ public class DialogueManager : MonoBehaviour
         }
 
         LoadTriggers();
+        BuildPortraitLookup();
         SubscribeToEvents();
+    }
+    
+    private void BuildPortraitLookup()
+    {
+        portraitLookup.Clear();
+        foreach (CharacterPortrait portrait in characterPortraits)
+        {
+            if (portrait != null && !string.IsNullOrEmpty(portrait.characterName))
+            {
+                portraitLookup[portrait.characterName] = portrait;
+                Debug.Log($"[DialogueManager] Registered portrait for '{portrait.characterName}' with {portrait.expressions.Count} expressions");
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Get portrait sprite for a specific character and expression.
+    /// </summary>
+    public Sprite GetPortraitSprite(string characterName, string expressionName)
+    {
+        if (portraitLookup.TryGetValue(characterName, out CharacterPortrait portrait))
+        {
+            return portrait.GetExpression(expressionName);
+        }
+        
+        Debug.LogWarning($"[DialogueManager] No portrait data found for character '{characterName}'");
+        return null;
     }
 
     void OnDestroy()
@@ -197,7 +229,10 @@ public class DialogueManager : MonoBehaviour
         DialogueLine line = dialogueQueue.Dequeue();
         isShowingDialogue = true;
 
-        Debug.Log($"[DialogueManager] Showing dialogue - Speaker: {line.speaker}, Text: {line.text}");
+        Debug.Log($"[DialogueManager] Showing dialogue - Speaker: {line.speaker}, Expression: {line.expression}, Text: {line.text}");
+
+        // Get portrait sprite for this speaker and expression
+        Sprite portraitSprite = GetPortraitSprite(line.speaker, line.expression);
 
         // Format dialogue with speaker name
         string displayText = string.IsNullOrEmpty(line.speaker) 
@@ -210,8 +245,8 @@ public class DialogueManager : MonoBehaviour
             displayText += "\n\n(Press [A] to continue)";
         }
 
-        Debug.Log($"[DialogueManager] Calling DialogueBoxController.Show with text length: {displayText.Length}");
-        DialogueBoxController.Instance?.Show(displayText, !controlsFrozen);
+        Debug.Log($"[DialogueManager] Calling DialogueBoxController.Show with text length: {displayText.Length}, portrait: {(portraitSprite != null ? "YES" : "NO")}");
+        DialogueBoxController.Instance?.Show(displayText, portraitSprite, !controlsFrozen);
     }
 
     /// <summary>

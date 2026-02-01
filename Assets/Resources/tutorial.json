@@ -9,22 +9,22 @@
       "dialogue": [
         {
           "speaker": "Casa",
-          "expression": "gentle_smile",
+          "expression": "guarded",
           "text": "Okay. So. Before you panic—this isn’t hard."
         },
         {
           "speaker": "Casa",
-          "expression": "thinking",
+          "expression": "pensive",
           "text": "You just push things. If three of the same kind touch, they combine."
         },
         {
           "speaker": "Casa",
-          "expression": "matter_of_fact",
+          "expression": "guarded",
           "text": "When they level up enough… they disappear. Cleaned."
         },
         {
           "speaker": "Casa",
-          "expression": "small_shrug",
+          "expression": "guarded",
           "text": "No timers. No pressure. Just… physics. Emotional physics."
         }
       ]
@@ -38,12 +38,12 @@
       "dialogue": [
         {
           "speaker": "Casa",
-          "expression": "pointing",
+          "expression": "guarded",
           "text": "One thing though—try not to leave little leftovers."
         },
         {
           "speaker": "Casa",
-          "expression": "wry_smile",
+          "expression": "guarded",
           "text": "Stragglers pile up. That’s usually how things get messy again."
         }
       ]
@@ -59,12 +59,12 @@
       "dialogue": [
         {
           "speaker": "Casa",
-          "expression": "embarrassed",
+          "expression": "embarassed",
           "text": "Ah—wait! Please don’t touch that."
         },
         {
           "speaker": "Casa",
-          "expression": "looking_away",
+          "expression": "embarassed",
           "text": "I know it’s dumb. I just… don’t want anyone else seeing my unmentionables."
         }
       ]
@@ -80,12 +80,12 @@
       "dialogue": [
         {
           "speaker": "Casa",
-          "expression": "uneasy",
+          "expression": "upset",
           "text": "Could you do the dishes?"
         },
         {
           "speaker": "Casa",
-          "expression": "hands_trembling",
+          "expression": "breaking",
           "text": "I’ve been… kind of shaky lately. I don’t trust myself not to drop them."
         }
       ]
@@ -99,12 +99,12 @@
       "dialogue": [
         {
           "speaker": "Casa",
-          "expression": "surprised",
+          "expression": "upset",
           "text": "Oh."
         },
         {
           "speaker": "Casa",
-          "expression": "soft_relief",
+          "expression": "guarded",
           "text": "Yeah. That actually helps."
         }
       ]
@@ -118,12 +118,12 @@
       "dialogue": [
         {
           "speaker": "Casa",
-          "expression": "genuine_smile",
+          "expression": "guarded",
           "text": "You didn’t leave anything behind."
         },
         {
           "speaker": "Casa",
-          "expression": "quiet_pride",
+          "expression": "guarded",
           "text": "See? It’s not about doing everything. Just… doing enough."
         }
       ]
@@ -137,12 +137,12 @@
       "dialogue": [
         {
           "speaker": "Casa",
-          "expression": "deadpan",
+          "expression": "guarded",
           "text": "…How did you manage to leave stragglers in the tutorial?"
         },
         {
           "speaker": "Casa",
-          "expression": "teasing_smile",
+          "expression": "guarded",
           "text": "I mean. Impressive. Truly."
         }
       ]
@@ -162,7 +162,7 @@
         },
         {
           "speaker": "Casa",
-          "expression": "teasing_smile",
+          "expression": "guarded",
           "text": "But I think I like it."
         }
       ]

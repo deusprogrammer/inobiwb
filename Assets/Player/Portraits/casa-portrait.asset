@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8c9df14da173d14085cd1d8285fdb18, type: 3}
+  m_Name: casa-portrait
+  m_EditorClassIdentifier: 
+  characterName: Casa
+  expressions:
+  - expressionName: guarded
+    sprite: {fileID: 21300000, guid: d836cb65a09bf7346906ab5271918bfd, type: 3}
+  - expressionName: embarassed
+    sprite: {fileID: 21300000, guid: ad6cbd3ab90ae534594b95e3d2131a6e, type: 3}
+  - expressionName: pensive
+    sprite: {fileID: 21300000, guid: ffd43062bf4a6ce4cb1a4907ecd7ae6f, type: 3}
+  - expressionName: upset
+    sprite: {fileID: 21300000, guid: 141cd2b43c0f7574895203e61d0200a5, type: 3}
+  - expressionName: breaking
+    sprite: {fileID: 21300000, guid: 857cda4949c87004c98f20c4e7207f74, type: 3}
+  - expressionName: default
+    sprite: {fileID: 21300000, guid: d836cb65a09bf7346906ab5271918bfd, type: 3}

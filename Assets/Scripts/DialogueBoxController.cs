@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 
 public class DialogueBoxController : MonoBehaviour
@@ -13,8 +14,8 @@ public class DialogueBoxController : MonoBehaviour
     [Tooltip("The TextMeshProUGUI component for continue prompt")]
     public TextMeshProUGUI continuePromptText;
     
-    [Tooltip("Container for character portrait (reserved for future use)")]
-    public RectTransform portraitContainer;
+    [Tooltip("Image component for character portrait")]
+    public Image portraitImage;
     
     [Header("Auto-Hide Settings")]
     [Tooltip("Duration in seconds before dialogue auto-hides (0 = no auto-hide)")]
@@ -63,14 +64,29 @@ public class DialogueBoxController : MonoBehaviour
     }
     
     /// <summary>
-    /// Show the dialogue box with the specified text
+    /// Show the dialogue box with the specified text and optional portrait
     /// </summary>
-    public void Show(string text, bool enableAutoHide = false)
+    public void Show(string text, Sprite portrait = null, bool enableAutoHide = false)
     {
         if (dialogueText != null)
         {
             dialogueText.text = text;
         }
+        
+        // Update portrait
+        if (portraitImage != null)
+        {
+            if (portrait != null)
+            {
+                portraitImage.sprite = portrait;
+                portraitImage.enabled = true;
+            }
+            else
+            {
+                portraitImage.enabled = false;
+            }
+        }
+        
         isAutoHideEnabled = false;
         autoHideTimer = 0f;
         
@@ -99,6 +115,15 @@ public class DialogueBoxController : MonoBehaviour
         {
             dialogueCanvas.gameObject.SetActive(false);
         }
+        
+        // Hide portrait
+        if (portraitImage != null)
+        {
+            portraitImage.enabled = false;
+        }
+        
+        isAutoHideEnabled = false;
+        autoHideTimer = 0f;
         
         Debug.Log("[DialogueBox] Hidden");
     }
