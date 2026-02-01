@@ -199,6 +199,12 @@ public class HomeBoyStateController : GameObjectStateController
         moveInput = inputValue.Get<Vector2>();
         Debug.Log($"[{gameObject.name}] HandleMove processing input: {moveInput}, currentState: {CurrentStateName}");
 
+        // Hide dialogue box when player starts moving
+        if (moveInput.sqrMagnitude > 0 && DialogueBoxController.Instance != null)
+        {
+            DialogueBoxController.Instance.Hide();
+        }
+
         // Update grid direction based on input (lock to cardinal directions)
         if (moveInput.sqrMagnitude > 0)
         {

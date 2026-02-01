@@ -187,6 +187,13 @@ public class LevelLoader : MonoBehaviour
         
         // Create boundary walls around the level
         CreateBoundaryWalls(maxRows, maxCols, totalOffset);
+        
+        // Show level start dialogue
+        DialogueBoxController dialogueBox = FindFirstObjectByType<DialogueBoxController>();
+        if (dialogueBox != null)
+        {
+            dialogueBox.Show("Level Start!");
+        }
     }
     
     void CreateGroundPlane(int rows, int cols, Vector3 offset)
